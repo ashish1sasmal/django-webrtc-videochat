@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+    <title>Hello, world!</title>
+  </head>
+  <body>
+    
+    <div class="container col-8" style="background-color: #cbcdd1;padding: 20px;border-radius: 5px;margin-top: 30px;">
+      <h4>Your username : {{username}}</h4>
+      <div class="col-6" id="call-dialog">
+          <label for="call_to">Make call to : </label>
+          <input type="text" class="form-control" name="" id="call_to">
+          <br>
+          <button class="btn btn-primary" onclick="call();">Call</button>
+      </div>
+      <div class="col-6" id="receive-dialog" style="display: none;">
+        <h4 id="call-receive-msg"></h4>
+        <button class="btn btn-success" id="answer" onclick="answer();">Answer</button>
+      </div>
+      <br>
+      <div class="col-8">
+          <div>
+              <video id="local-video" muted autoplay width="300"></video>
+          </div>
+
+          <div>
+            <video id="remote-video" muted autoplay width="300"></video>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+
+<script>
+  let myName = '{{username}}';
+  let chatSocket;
+  let localVideo = document.getElementById("local-video");
+  let remoteVideo = document.getElementById("remote-video");
+  let callDialog = document.getElementById("call-dialog");
+  let receiveDialog = document.getElementById("receive-dialog");
+  let localVideoStream;
+  let call_to;
+  let peerConnection;
+  let remoteOffer;
+
+  let ICEconfig = {
+    iceServers: [
+        {   urls: [ "stun:bn-turn1.xirsys.com" ]}, 
+        {   username: "WtJcHNTgNpN90FSvMVmZtWWVztiHEhbFfsdRyMS1f_PoMfbjWJSW_rVXiivC4VCOAAAAAGGZQvNhc2hpc2hzYXNtYWwx",   
+        credential: "6e26a8e4-4a32-11ec-8f0c-0242ac140004",   
+        urls: [       
+            "turn:bn-turn1.xirsys.com:80?transport=udp",       
+            "turn:bn-turn1.xirsys.com:3478?transport=udp",       
+            "turn:bn-turn1.xirsys.com:80?transport=tcp",       
+            "turn:bn-turn1.xirsys.com:3478?transport=tcp",       
+            "turns:bn-turn1.xirsys.com:443?transport=tcp",       
+            "turns:bn-turn1.xirsys.com:5349?transport=tcp"   
+        ]}]
+    }
+
+  const mediaConstraints = {
+    "video" : true,
+    "audio" : true
+  }
+
+  function connectWebSocket(){
+      var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+      chatSocket = new WebSocket(ws_scheme+'://' +window.location.host +'/ws/chat/');
+      console.log("Websocket connected");
+
+      chatSocket.onopen = event =>{
+          chatSocket.send(JSON.stringify({
+                "type": "login",
+                "to": myName,
+                "message" : "Web socket working"
+            }));
+      }
+
+      chatSocket.onmessage = (e) =>{
+        const data = JSON.parse(e.data);
+        console.log(data);
+
+        let type = data.type;
+        if (type == "answer"){
+            console.log("Call answered")
+            peerConnection.setRemoteDescription(data.answer);
+        }
+
+        else if (type == "candidate"){
+            console.log("ICE candidate received")
+            handleIncomingICEcandidate();
+        }
+
+        else if (type == "offer"){
+            console.log("Receiving call from "+call_to);
+            handleIncomingcall(data);
+        }
+      }
+
+      chatSocket.onclose = (e) =>{
+        alert("Socket disconnected");
+      }
+  }
+
+  handleIncomingICEcandidate(data){
+    if (peerConnection){
+        peerConnection.addIceCandidate(data.candidate);
+    }
+    else{
+        console.log("RTC peer connection not set");
+    }
+  }
+
+  function handleIncomingcall(data){
+      call_to = data.from;
+      receiveDialog.style.display = "block";
+      callDialog.style.display = "none";
+      remoteOffer = data.offer;
+  }
+
+  function sendSocket(data){
+    if (chatSocket){
+        data.to = call_to;
+        data.from = myName;
+        console.log(data);
+        chatSocket.send(JSON.stringify(
+          data
+        ));
+    }
+    else{
+        console.log("Chat socket not connected")
+    }
+  }
+
+  connectWebSocket();
+
+  function createAndSendAnswer(){
+    peerConnection.setRemoteDescription(remoteOffer);
+    peerConnection.createAnswer((answer) => {
+        peerConnection.setLocalDescription(answer)
+        sendSocket({
+            type: "answer",
+            answer: answer
+        })
+    }, error => {
+      console.log(error);
+    })
+  }
+
+
+  function answer(){
+    accessMedia().then(bool => {
+              createAndSendAnswer()
+          })
+  }
+
+  function call(){
+    call_to = document.getElementById("call_to").value;
+    accessMedia().then(
+      bool => {
+               createAndSendOffer()
+            })
+  }
+
+  function createAndSendOffer(){
+      peerConnection.createOffer((offer) => {
+          sendSocket({
+              type: "offer",
+              offer: offer
+          })
+      peerConnection.setLocalDescription(offer)
+      }, (error) => {
+        console.log(error)
+      })
+  }
+
+  function accessMedia(){
+    return navigator.mediaDevices.getUserMedia(mediaConstraints)
+      .then(stream => {
+          localVideoStream = stream;
+          localVideo.srcObject = localVideoStream;
+          return createRTCPeerConnection();
+          
+      }).catch(function (error) {
+        console.log(error)
+      });
+  }
+
+  function createRTCPeerConnection(){
+      peerConnection = new RTCPeerConnection(ICEconfig);
+      // peerConnection = new RTCPeerConnection(null);
+      peerConnection.addStream(localVideoStream);
+
+      peerConnection.onaddstream = handleAddStream;
+      peerConnection.onicecandidate = handleICEcandidate;
+      return;
+  }
+  
+  function handleAddStream(event){
+      remoteStream = event.stream;
+      remoteVideo.srcObject = remoteStream;
+  }
+
+  function handleICEcandidate(event){
+    if (event.candidate == null)
+        return;
+    sendSocket({
+        type: "candidate",
+        candidate: event.candidate
+    })
+  }
+  
+
+</script>
+
+  </body>
+</html>
