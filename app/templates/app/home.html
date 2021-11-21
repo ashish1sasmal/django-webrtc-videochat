@@ -70,6 +70,8 @@
     "audio" : true
   }
 
+  let iceCandidatesList = []
+
   function connectWebSocket(){
       var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
       chatSocket = new WebSocket(ws_scheme+'://' +window.location.host +'/ws/chat/');
@@ -95,7 +97,7 @@
 
         else if (type == "candidate"){
             console.log("ICE candidate received")
-            handleIncomingICEcandidate();
+            handleIncomingICEcandidate(data);
         }
 
         else if (type == "offer"){
@@ -109,12 +111,13 @@
       }
   }
 
-  handleIncomingICEcandidate(data){
+  function handleIncomingICEcandidate(data){
     if (peerConnection){
         peerConnection.addIceCandidate(data.candidate);
     }
     else{
         console.log("RTC peer connection not set");
+        iceCandidatesList.push(data.candidate);
     }
   }
 
@@ -144,7 +147,21 @@
   function createAndSendAnswer(){
     peerConnection.setRemoteDescription(remoteOffer);
     peerConnection.createAnswer((answer) => {
-        peerConnection.setLocalDescription(answer)
+      peerConnection.setLocalDescription(answer);
+        if ( iceCandidatesList.length >0 ){
+          for (let i=0; i<iceCandidatesList.length; i++){
+              try {
+                  peerConnection.addIceCandidate(iceCandidatesList[i]);
+              }
+              catch (error) {
+                  console.log(error);
+              }
+          }
+          iceCandidatesList = [];
+        }
+        else{
+            console.log("No ICE candidates found!");
+        }
         sendSocket({
             type: "answer",
             answer: answer
@@ -196,10 +213,9 @@
   function createRTCPeerConnection(){
       peerConnection = new RTCPeerConnection(ICEconfig);
       // peerConnection = new RTCPeerConnection(null);
-      peerConnection.addStream(localVideoStream);
-
       peerConnection.onaddstream = handleAddStream;
       peerConnection.onicecandidate = handleICEcandidate;
+      peerConnection.addStream(localVideoStream);
       return;
   }
   
