@@ -1,0 +1,57 @@
+{% extends "app/base.html" %}
+{% block content %}
+<div class="inner cover" align="center" style="color:white;">
+    <div class="col-6">
+        <form>
+            <div class="mb-1">
+              <label for="email" class="form-label">Email address</label>
+              <input type="email" name="email" class="form-control" id="email" aria-describedby="emailHelp">
+              <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+            </div>
+            <div class="mb-1">
+              <label for="password1" class="form-label">Password</label>
+              <input type="password" name="password1" class="form-control" id="password1">
+            </div>
+            <div class="mb-1">
+                <label for="password2" class="form-label">Confirm Password</label>
+                <input type="password" name="password2" class="form-control" id="password2">
+              </div>
+            <button type="button" class="btn btn-primary mt-2" onclick="register();">Submit</button>
+          </form>
+    </div>
+</div>
+
+<script>
+    const csrf = '{{csrf_token}}';
+        function register(){
+            email = document.getElementById("email").value;
+            pass1 = document.getElementById("password1").value;
+            pass2 = document.getElementById("password2").value;
+            if (pass1 == pass2){
+                const formData = new FormData();
+                formData.append('email', email);
+                formData.append('password1', pass1);
+                formData.append('password2', pass2);
+                const otherPram={
+                    body:formData,
+                    method:"POST",
+                    headers: {
+                        "X-CSRFToken": csrf
+                    },
+                    mode: "same-origin",
+                };
+                fetch("{% url 'user:register' %}", otherPram).then(res=>res.json())
+                .then(data=>{
+                    console.log(data);
+                    window.location = "{% url 'app:home' %}";
+                });
+            }
+            else{
+                alert("Password don't match");
+            }
+            
+        }
+
+</script>
+
+{% endblock content %}

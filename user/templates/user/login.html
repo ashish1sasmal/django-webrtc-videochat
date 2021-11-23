@@ -1,0 +1,48 @@
+{% extends "app/base.html" %}
+{% block content %}
+<style>
+    label{
+        color: white;
+    }
+</style>
+<div class="col-4 container" align="center">
+    <form>
+        <div class="mb-1">
+            <label for="email" class="form-label">Email address</label>
+            <input type="email" name="email" class="form-control" id="email" aria-describedby="emailHelp">
+            <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+        </div>
+        <div class="mb-1">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" name="password" class="form-control" id="password">
+        </div>
+        <button type="button" class="btn btn-primary mt-2" onclick="login();">Login</button>
+        </form>
+</div>
+
+<script>
+    const csrf = '{{csrf_token}}';
+        function login(){
+            email = document.getElementById("email").value;
+            pass = document.getElementById("password").value;
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('password', pass);
+            const otherPram={
+                body:formData,
+                method:"POST",
+                headers: {
+                    "X-CSRFToken": csrf
+                },
+                mode: "same-origin",
+            };
+            fetch("{% url 'user:login' %}", otherPram).then(res=>res.json())
+            .then(data=>{
+                console.log(data);
+                window.location = "{% url 'app:home' %}";
+            });
+        }
+
+</script>
+
+{% endblock content %}
