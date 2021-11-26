@@ -1,28 +1,47 @@
-from django.shortcuts import render
+from django.contrib.auth import login
+from django.shortcuts import redirect, render
 
 # Create your views here.
 import uuid
 from django.core.cache import cache
 from .utils import Response
 from .constants import *
-from .service import add_remove_online_user
+from .service import add_remove_online_user, updateLocationList
 from django.contrib.auth.decorators import login_required
+
+import uuid
 
 def home(request):
     return render(request, "app/home.html")
 
 @login_required
-def chat(request):
-    unique_id = request.user.user_profile.unique_id
+def startRoom(request):
+    room_id = str(uuid.uuid4())[:1]
+    return redirect("app:enterRoom", room_id=room_id)
+
+@login_required
+def enterRoom(request, room_id):
+    user_unique_id = request.user.user_profile.unique_id
     online_users = cache.get('online_users')
     if not online_users:
         online_users = set()
 
     context = {
-        "username" : unique_id,
-        "online_users" : online_users
+        "username" : user_unique_id,
+        "online_users" : online_users,
+        "room_id" : room_id
     }
-    return render(request, "app/index.html", context=context)
+    return render(request, "app/sender.html", context=context)
+
+def locationSharing(request):
+    latitude = request.GET.get("lat")
+    longitude = request.GET.get("long")
+    action = request.GET.get("action")
+    username = request.GET.get("username")
+    location_sharing_users = updateLocationList(action, username, latitude=latitude, longitude=longitude)
+    if location_sharing_users == False:
+        return Response("failed", "Invalid action provided", status=400)
+    return Response("success", f"{action} performed", data=location_sharing_users)
 
 def manageOnlineUsers(request):
     if request.method == "POST":
@@ -35,6 +54,3 @@ def manageOnlineUsers(request):
             return Response(FAILED, "Invalid action provided", status=400)
         
         return Response(SUCCESS, action+" action performed for "+username, data=online_users)
-
-        
-    

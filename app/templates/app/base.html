@@ -35,7 +35,7 @@
                   </li>
                   
                   <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{% url 'app:chat' %}">Chat</a>
+                    <a class="nav-link active" aria-current="page" href="{% url 'app:startRoom' %}">Chat</a>
                   </li>
                   <li class="nav-item">
                     <a class="nav-link active" aria-current="page" href="#" style="color: orange;" onclick="copyId('{{user.user_profile.unique_id}}');"><i class="far fa-user"></i> {{user.user_profile.unique_id}}</a>
@@ -71,16 +71,35 @@
           </div>
         </div>
       </nav>
+
       <br>
     {% block content %}
 
-        {% endblock content %}
+    {% endblock content %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
     <script>
       document.getElementById("active-btn").style.display = "none";
       function copyId(val){
-    navigator.clipboard.writeText(val);
-  }
+        navigator.clipboard.writeText(val);
+      }
+
+      function getLocation() {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition);
+          } else {
+            myPosition.innerHTML = "Geolocation is not supported by this browser.";
+          }
+      }
+
+      function showPosition(position) {
+      
+          myPosition.style.display = "block";
+          myPosition.innerHTML = "<i class='fas fa-map-marker-alt'></i> " + position.coords.latitude +
+          ", " + position.coords.longitude;
+          fetch(`{% url 'app:locationSharing' %}?lat=${position.coords.latitude}&long=${position.coords.longitude}&action=add&username=`+'{{user.user_profile.unique_id}}').then(res=>res.json()).then(data=>{
+              console.log(data);
+          });
+      }
     </script>
   </body>
 </html>

@@ -171,22 +171,7 @@ video{
   activeBtn.checked = false;
   myPosition.style.display = "block";
 
-  function getLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition);
-      } else {
-        myPosition.innerHTML = "Geolocation is not supported by this browser.";
-      }
-  }
-
   document.getElementById("location").style.display = "block";
-  function showPosition(position) {
-   
-      myPosition.style.display = "block";
-      myPosition.innerHTML = "<i class='fas fa-map-marker-alt'></i> " + position.coords.latitude +
-      ", " + position.coords.longitude;
-  }
-
 
   let ICEconfig = {
     iceServers: [
@@ -334,10 +319,10 @@ video{
             type: "answer",
             answer: answer
         })
-    }, error => {
-      console.log(error);
-    })
-  }
+      }, error => {
+            console.log(error);
+          })
+        }
 
   function answer(){
     accessMedia().then(bool => {

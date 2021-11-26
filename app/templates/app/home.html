@@ -1,7 +1,7 @@
 {% extends "app/base.html" %}
 {% block content %}
 <div class="container" align="center" style="color:white;">
-  <div class="col-6" style="left: 25%;top: 30%; position: absolute;">
+  <div class="col-6" style="left: 25%;top: 25%; position: absolute;">
     <h1 class="cover-heading">You are not alone...</h1>
 
     <p class="lead">“Those who pass by us, do not go alone, and do not leave us alone; they leave a bit of themselves, and take a little of us.”
@@ -11,7 +11,7 @@
         
     </p>
 
-    <p class="lead"><a class="btn btn-lg btn-info" href="#">Let's hold hands</a></p>
+    <p class="lead"><a class="btn btn-lg btn-info" href="{% url 'app:startRoom' %}">Start Meeting</a></p>
 
     <div class="mastfoot">
       <div class="inner">       

@@ -1,0 +1,459 @@
+{% extends "app/base.html" %}
+{% block content %}
+    <style>
+      .switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 24px;
+      }
+
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(16px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 24px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+video{
+    border-radius: 8px;
+    border:1px solid #929494;
+}
+
+.spl-col-1{
+  border: 3px solid #827e7e ;
+}
+
+.spl-col-2{
+  border:3px solid #827e7e;
+}
+    </style>
+    <div class="container" style="padding: 10px;border-radius: 5px; color:white;" >
+      <div class="row">
+        
+        <div class="col-md-9 spl-col-1" style="background-color: #303030; border-radius: 8px;padding-top: 15px;padding-bottom: 15px;margin: 5px;">
+            <div class="row">
+                <div class="col-md-4 video">
+                    <video id="video-1" muted autoplay width="300" height="200"></video>
+                </div>
+          
+                <div class="col-md-4 video">
+                  <video id="video-2" autoplay width="300" height="200"></video>
+                </div>
+                
+                <div class="col-md-4 video">
+                  <video id="video-3" autoplay width="300" height="200"></video>
+                </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-4 video">
+                  <video id="video-4" muted autoplay width="300" height="200"></video>
+              </div>
+        
+              <div class="col-md-4 video">
+                <video id="video-5" autoplay width="300" height="200"></video>
+              </div>
+              
+              <div class="col-md-4 video">
+                <video id="video-6" autoplay width="300" height="200"></video>
+              </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4 video">
+                <video id="video-7" muted autoplay width="300" height="200"></video>
+            </div>
+      
+            <div class="col-md-4 video">
+              <video id="video-8" autoplay width="300" height="200"></video>
+            </div>
+            
+            <div class="col-md-4 video">
+              <video id="video-9" autoplay width="300" height="200"></video>
+            </div>
+        </div>
+        </div>
+
+          <div class="col-md-2 d-flex flex-column flex-shrink-0 p-3 bg-light  spl-col-2" style="width: 280px;border-radius: 8px;margin-left: 1rem;">
+            <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
+              <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"/></svg>
+              <span class="fs-4">Online users</span>
+              <hr>
+            </a>
+            <hr>
+            <ul class="nav nav-pills flex-column mb-auto" id="online-list">
+              
+            </ul> 
+          </div>
+      </div>
+      
+      </div>
+          
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+
+<script>
+  let myDetails = {"id": '{{user.user_profile.unique_id}}', "name": '{{user.username}}'};
+  let chatSocket;
+  let localVideo = document.getElementById("video-1");
+  let remoteVideo = document.getElementById("remote-video");
+  let callDialog = document.getElementById("call-dialog");
+  let receiveDialog = document.getElementById("receive-dialog");
+  let onlineList = document.getElementById("online-list");
+  let activeBtn = document.getElementById("active-btn");
+  let myPosition = document.getElementById("position");
+  let muteAudioBtn = document.getElementById("muteAudioBtn");
+  let unmuteAudioBtn = document.getElementById("unmuteAudioBtn");
+  let muteVideoBtn = document.getElementById("muteVideoBtn");
+  let unmuteVideoBtn = document.getElementById("unmuteVideoBtn");
+  let localVideoStream;
+  let call_to;
+  let peerConnection = {};
+  let remoteOffer;
+  let flag = [[false, false, false],[false, false, false],[false, false, false]];
+
+  flag[0][0] = true;
+
+  document.getElementById("activeDiv").style.display = "block";
+  activeBtn.style.display = "block";
+  activeBtn.checked = false;
+  myPosition.style.display = "block";
+
+  function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition);
+      } else {
+        myPosition.innerHTML = "Geolocation is not supported by this browser.";
+      }
+  }
+
+  document.getElementById("location").style.display = "block";
+  function showPosition(position) {
+      myPosition.style.display = "block";
+      myPosition.innerHTML = "<i class='fas fa-map-marker-alt'></i> " + position.coords.latitude +
+      ", " + position.coords.longitude;
+  }
+
+
+  let ICEconfig = {
+    iceServers: [
+        {   urls: [ "stun:bn-turn1.xirsys.com" ]}, 
+        {   username: "WtJcHNTgNpN90FSvMVmZtWWVztiHEhbFfsdRyMS1f_PoMfbjWJSW_rVXiivC4VCOAAAAAGGZQvNhc2hpc2hzYXNtYWwx",   
+        credential: "6e26a8e4-4a32-11ec-8f0c-0242ac140004",   
+        urls: [       
+        "turn:bn-turn1.xirsys.com:80?transport=udp",       
+            "turn:bn-turn1.xirsys.com:3478?transport=udp",       
+            "turn:bn-turn1.xirsys.com:80?transport=tcp",       
+            "turn:bn-turn1.xirsys.com:3478?transport=tcp",       
+            "turns:bn-turn1.xirsys.com:443?transport=tcp",       
+            "turns:bn-turn1.xirsys.com:5349?transport=tcp" 
+        ]}]
+    }
+
+  const mediaConstraints = {
+    "video" : true,
+    "audio" : true
+  }
+
+  let iceCandidatesList = {};
+
+  function play() {
+	  var audio = new Audio('https://2u039f-a.akamaihd.net/downloads/ringtones/files/mp3/xperia-artic-54206.mp3');
+	  audio.play();
+	}
+
+  function connectWebSocket(){
+      var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+      chatSocket = new WebSocket(ws_scheme+'://' +window.location.host +'/ws/chat/{{room_id}}/');
+      console.log("Websocket connected");
+
+      chatSocket.onopen = event =>{
+          chatSocket.send(JSON.stringify({
+                "type": "login",
+                "to": myDetails,
+                "from": myDetails
+            }));
+            
+
+            chatSocket.send(JSON.stringify({
+                "type": "joiner",
+                "to": "all",
+                "from": myDetails,
+            }));
+      }
+
+      chatSocket.onmessage = (e) =>{
+        const data = JSON.parse(e.data);
+        console.log(data);
+
+        let type = data.type;
+        let user = data.from;
+        if (data.to.id == myDetails.id){
+            if (type == "success_join"){
+                iceCandidatesList[user.id] = [];
+                call(user);
+            }
+            else if (type == "offer"){
+              iceCandidatesList[user.id] = [];
+                console.log("Receiving call from "+user);
+                handleIncomingcall(user, data);
+            }
+            else if (type == "answer"){
+                console.log("Call answered")
+                peerConnection[user.id].pc.setRemoteDescription(data.answer);
+            }
+            else if (type == "candidate"){
+                console.log("ICE candidate received")
+                handleIncomingICEcandidate(user, data);
+            }
+        }
+        else{
+            if (type == "joiner"){
+              iceCandidatesList[user.id] = [];
+                call(user, true);
+            }
+            else if (type == "online_traffic"){
+                let action = data.action;
+                if (action == "remove"){
+                    var elem = document.getElementById(user.id);
+                    elem.parentNode.removeChild(elem);
+                }
+                else{
+                    onlineList.innerHTML += 
+                    ` <li class="nav-item" id='${data.user}'>
+                      <a href="#" class="nav-link link-dark" aria-current="page">
+                        <svg class="bi me-2" width="16" height="16"><use xlink:href="#home"/></svg>
+                        ${data.user}
+                      </a>
+                    </li>`
+                }
+            }
+        }
+      }
+
+      chatSocket.onclose = (e) =>{
+        alert("Socket disconnected");
+      }
+  }
+
+  function sendSocket(data, to, from){
+      if (chatSocket){
+          data.to = to;
+          data.from = from;
+          chatSocket.send(JSON.stringify(
+            data
+          ));
+      }
+      else{
+          console.log("Chat socket not connected")
+      }
+  }
+  connectWebSocket();
+  function handleIncomingICEcandidate(user, data){
+      if (peerConnection[user.id]){
+        peerConnection[user.id].pc.addIceCandidate(data.candidate);
+      }
+      else{
+          console.log("RTC peer connection not set");
+          iceCandidatesList[user.id].push(data.candidate);
+      }
+      
+
+  }
+
+  function handleIncomingcall(user, data){
+    accessMedia(user).then(bool => {
+          createAndSendAnswer(user, data.offer)
+      })
+  }
+
+  function manageSocket(){
+      if (activeBtn.checked){
+          connectWebSocket();
+      }
+      else{
+          if (chatSocket){
+              chatSocket.close();
+              console.log("Socket closed")
+          }
+          else{
+              console.log("Socket not connected");
+          }
+      }
+  }
+
+
+  function createAndSendAnswer(user, remoteOffer){
+    peerConnection[user.id].pc.setRemoteDescription(remoteOffer);
+    peerConnection[user.id].pc.createAnswer((answer) => {
+      peerConnection[user.id].pc.setLocalDescription(answer);
+        if ( iceCandidatesList[user.id].length >0 ){
+          for (let i=0; i<iceCandidatesList[user.id].length; i++){
+              try {
+                  peerConnection[user.id].pc.addIceCandidate(iceCandidatesList[user.id][i]);
+              }
+              catch (error) {
+                  console.log(error);
+              }
+          }
+          iceCandidatesList[user.id] = [];
+        }
+        else{
+            console.log("No ICE candidates found!");
+        }
+        sendSocket({
+            type: "answer",
+            answer: answer
+        }, user, myDetails)
+      }, error => {
+            console.log(error);
+          })
+        }
+  function createAndSendOffer(user){
+      console.log("offer true")
+      peerConnection[user.id].pc.createOffer((offer) => {
+          sendSocket({
+              type: "offer",
+              offer: offer
+          }, user, myDetails)
+        peerConnection[user.id].pc.setLocalDescription(offer)
+      }, (error) => {
+        console.log(error)
+      })
+  }
+
+  function accessMedia(user){
+    console.log("access media "+myDetails.id)
+    return navigator.mediaDevices.getUserMedia(mediaConstraints)
+      .then(stream => {
+          localVideoStream = stream;
+          localVideo.srcObject = localVideoStream;
+          return createRTCPeerConnection(user);
+      }).catch(function (error) {
+        console.log(error)
+      });
+  }
+
+  function call(user){
+      accessMedia(user).then(
+          bool => {
+              createAndSendOffer(user)
+          })
+    }
+
+  function createRTCPeerConnection(user){
+    console.log("RTCPeerConnection connected");
+      peerConnection[user.id] = {"name" : user.name, "pc" : new RTCPeerConnection(ICEconfig)};
+      // peerConnection = new RTCPeerConnection(null);
+      peerConnection[user.id].pc.onaddstream = event => handleAddStream(event);
+      peerConnection[user.id].pc.onicecandidate = event => handleICEcandidate(user, event);
+      peerConnection[user.id].pc.addStream(localVideoStream);
+      return true;
+  }
+  
+  function handleAddStream(event){
+      for (i=0; i<9; i++){
+          if (!flag[parseInt(i/3)][i%3]){
+            flag[parseInt(i/3)][i%3] = true;
+              document.getElementById("video-"+(i+1)).srcObject = event.stream;
+            return;
+          }
+        }
+    }
+
+  function handleICEcandidate(user, event){
+    if (event.candidate == null)
+        return;
+    sendSocket({
+        type: "candidate",
+        candidate: event.candidate
+    }, user, myDetails)
+  }
+
+  function muteAudio(){
+    if (localVideoStream){
+        muteAudioBtn.style.display = "none";
+        unmuteAudioBtn.style.display = "block";
+        localVideoStream.getAudioTracks()[0].enabled = false;
+    }
+    
+  }
+
+  function unmuteAudio(){
+    if (localVideoStream){
+      muteAudioBtn.style.display = "block";
+      unmuteAudioBtn.style.display = "none";
+      localVideoStream.getAudioTracks()[0].enabled = true;
+    }
+   
+  }
+
+  function muteVideo(){
+    if (localVideoStream){
+      muteVideoBtn.style.display = "none";
+      unmuteVideoBtn.style.display = "block";
+      localVideoStream.getVideoTracks()[0].enabled = false;
+    }
+    
+  }
+
+  function unmuteVideo(){
+    if (localVideoStream){
+      muteVideoBtn.style.display = "block";
+      unmuteVideoBtn.style.display = "none";
+      localVideoStream.getVideoTracks()[0].enabled = true;
+    }
+    
+  }
+
+  
+</script>
+
+{% endblock content %}

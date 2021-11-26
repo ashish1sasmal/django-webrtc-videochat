@@ -5,6 +5,8 @@ app_name = "app"
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('chat/', views.chat, name='chat'),
-    path('manage/online/', views.manageOnlineUsers, name="manageOnlineUsers")
+    path('start/chat/', views.startRoom, name='startRoom'),
+    path('chat/<str:room_id>', views.enterRoom, name='enterRoom'),
+    path('manage/online/', views.manageOnlineUsers, name="manageOnlineUsers"),
+    path('location/update/', views.locationSharing, name="locationSharing")
 ]
