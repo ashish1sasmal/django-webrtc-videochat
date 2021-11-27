@@ -122,7 +122,15 @@ video{
         </div>
 
           <div class="col-md-2 d-flex flex-column flex-shrink-0 p-3 bg-light  spl-col-2" style="width: 280px;border-radius: 8px;margin-left: 1rem;">
-            <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
+            <div style="display:inline;">
+              <a href="#" onclick="muteAudio();" id="muteAudioBtn"><i class="fas fa-microphone fa-2x"></i></a>
+              <a href="#" style="display:none;" onclick="unmuteAudio();" id="unmuteAudioBtn"><i class="fas fa-microphone-slash fa-2x" style="color:red;"></i></a>
+              <a href="#" onclick="muteVideo();" id="muteVideoBtn"><i class="fas fa-video fa-2x"></i></a>
+              <a href="#" style="display:none;" onclick="unmuteVideo();" id="unmuteVideoBtn"><i class="fas fa-video-slash fa-2x" style="color:red;"></i></a>
+            </div>
+            
+
+            <a href="#" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
               <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"/></svg>
               <span class="fs-4">Online users</span>
               <hr>
@@ -231,7 +239,7 @@ video{
 
       chatSocket.onmessage = (e) =>{
         const data = JSON.parse(e.data);
-        console.log(data);
+        // console.log(data);
 
         let type = data.type;
         let user = data.from;
@@ -256,7 +264,7 @@ video{
         }
         else{
             if (type == "joiner"){
-              iceCandidatesList[user.id] = [];
+                iceCandidatesList[user.id] = [];
                 call(user, true);
             }
             else if (type == "online_traffic"){
@@ -369,24 +377,25 @@ video{
       })
   }
 
-  function accessMedia(user){
-    console.log("access media "+myDetails.id)
-    return navigator.mediaDevices.getUserMedia(mediaConstraints)
-      .then(stream => {
-          localVideoStream = stream;
-          localVideo.srcObject = localVideoStream;
-          return createRTCPeerConnection(user);
-      }).catch(function (error) {
-        console.log(error)
-      });
-  }
-
+  
   function call(user){
       accessMedia(user).then(
           bool => {
               createAndSendOffer(user)
           })
     }
+
+  function accessMedia(user){
+      console.log("access media "+myDetails.id)
+      return navigator.mediaDevices.getUserMedia(mediaConstraints)
+        .then(stream => {
+            localVideoStream = stream;
+            localVideo.srcObject = localVideoStream;
+            return createRTCPeerConnection(user);
+        }).catch(function (error) {
+          console.log(error)
+        });
+  }
 
   function createRTCPeerConnection(user){
     console.log("RTCPeerConnection connected");
@@ -395,12 +404,13 @@ video{
       peerConnection[user.id].pc.onaddstream = event => handleAddStream(event);
       peerConnection[user.id].pc.onicecandidate = event => handleICEcandidate(user, event);
       peerConnection[user.id].pc.addStream(localVideoStream);
-      return true;
+      return;
   }
   
   function handleAddStream(event){
       for (i=0; i<9; i++){
           if (!flag[parseInt(i/3)][i%3]){
+            console.log("Empty slot "+i)
             flag[parseInt(i/3)][i%3] = true;
               document.getElementById("video-"+(i+1)).srcObject = event.stream;
             return;
@@ -409,12 +419,12 @@ video{
     }
 
   function handleICEcandidate(user, event){
-    if (event.candidate == null)
-        return;
-    sendSocket({
-        type: "candidate",
-        candidate: event.candidate
-    }, user, myDetails)
+      if (event.candidate == null)
+          return;
+      sendSocket({
+          type: "candidate",
+          candidate: event.candidate
+      }, user, myDetails)
   }
 
   function muteAudio(){
