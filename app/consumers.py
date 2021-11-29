@@ -24,7 +24,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
                 'type' : 'online_traffic',
                 'action' : 'remove',
                 'to' : "all",
-                'from' : user_profile.unique_id
+                'from' : {"id":user_profile.unique_id, "name": self.scope['user'].username}
 
             }
         )

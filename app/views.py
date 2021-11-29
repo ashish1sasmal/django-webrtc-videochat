@@ -16,7 +16,7 @@ def home(request):
 
 @login_required
 def startRoom(request):
-    room_id = str(uuid.uuid4())[:1]
+    room_id = str(uuid.uuid4())[:8]
     return redirect("app:enterRoom", room_id=room_id)
 
 @login_required

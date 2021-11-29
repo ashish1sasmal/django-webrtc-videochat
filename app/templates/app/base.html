@@ -21,7 +21,7 @@
     
     <nav class="navbar navbar-expand-lg navbar-light bg-light shadow fixed-top ms-2 me-2 mt-2">
       <div class="container">
-        <a class="navbar-brand" href="#"><h3><b>< MyCode /></b></h3></a>
+        <a class="navbar-brand" href="{% url 'app:home' %}"><h3><b>< MyCode /></b></h3></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -48,7 +48,7 @@
                 <a class="nav-link" href="{% url 'user:registerView' %}"><h5><b>Register</b></h5></a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#"><h5><b>About</b></h5></a>
+                <a class="nav-link" href="https://www.linkedin.com/in/ashish-sasmal/"><h5><b>About</b></h5></a>
               </li>
             {% endif %}
           </ul>
