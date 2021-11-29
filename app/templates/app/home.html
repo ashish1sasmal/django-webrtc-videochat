@@ -1,28 +1,24 @@
 {% extends "app/base.html" %}
 {% block content %}
-<div class="container" align="center" style="color:white;">
-  <div class="col-6" style="left: 25%;top: 25%; position: absolute;">
-    <h1 class="cover-heading">You are not alone...</h1>
 
-    <p class="lead">“Those who pass by us, do not go alone, and do not leave us alone; they leave a bit of themselves, and take a little of us.”
-        
-    <small>    <br> <a href="https://en.wikipedia.org/wiki/Antoine_de_Saint-Exup%C3%A9ry" target=
-          "_blank">- Antoine de Saint-Exupéry</a></small>
-        
-    </p>
+<style>
+  body{
+      background-image: url("https://images.unsplash.com/photo-1585974738771-84483dd9f89f");
+      background-size: 100% 150%;
+  }
+</style>
 
-    <p class="lead"><a class="btn btn-lg btn-info" href="{% url 'app:startRoom' %}">Start Meeting</a></p>
+<br><br><br>
 
-    <div class="mastfoot">
-      <div class="inner">       
-    
-        <p>Ashish Sasmal</p>
-      </div>
+<div class="container">
+  <div class="p-5 mb-4 bg-light rounded-3">
+    <div class="container-fluid py-5" style="background-color: #e8e8e8;">
+      <h1 class="display-5 fw-bold">Custom jumbotron</h1>
+      <p class="col-md-8 fs-4">Using a series of utilities, you can create this jumbotron, just like the one in previous versions of Bootstrap. Check out the examples below for how you can remix and restyle it to your liking.</p>
+      <button class="btn btn-primary btn-lg" type="button">Example button</button>
     </div>
   </div>
-   
-  </div>
+</div>
 
- 
 
 {% endblock content %}

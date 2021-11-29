@@ -31,7 +31,7 @@ def enterRoom(request, room_id):
         "online_users" : online_users,
         "room_id" : room_id
     }
-    return render(request, "app/sender.html", context=context)
+    return render(request, "app/sender1.html", context=context)
 
 def locationSharing(request):
     latitude = request.GET.get("lat")

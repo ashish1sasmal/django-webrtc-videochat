@@ -10,69 +10,56 @@
     <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
     <title>< MyCode /></title>
     <style>
-      body{
-        background-color: black;
-      }
+
       .navbar
         {
-            border:3px solid #00b9d1;
+            border-radius: 8px;
         }
     </style>
   </head>
   <body>
     
-      <nav class="navbar navbar-expand-lg navbar-dark bg-dark mt-2 ms-3 me-3" style="border-radius: 10px;">
-        <div class="container-fluid">
-          <a class="navbar-brand" href="{% url 'app:home' %}"><h3 >< MyCode /></h3></a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarTogglerDemo02" >
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0" style="font-size:18px;">
-              {% if user.is_authenticated %}
-                  <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{% url 'user:logout' %}">Logout</a>
-                  </li>
-                  
-                  <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{% url 'app:startRoom' %}">Chat</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#" style="color: orange;" onclick="copyId('{{user.user_profile.unique_id}}');"><i class="far fa-user"></i> {{user.user_profile.unique_id}}</a>
-                  </li>
-
-                  <li class="nav-item" style="display: none;" id="location">
-                    <a class="nav-link active" id="position" aria-current="page" href="#" style="color: #5afa20;" onclick="getLocation();"><i class='fas fa-map-marker-alt'></i></a>
-                  </li>
-
-              {% else %}
-                  <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{% url 'user:loginView' %}">Login</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link active" href="{% url 'user:registerView' %}">Signup</a>
-                  </li>
-
-                  <li class="nav-item">
-                    <a class="nav-link active">About</a>
-                  </li>
-              {% endif %}
-            </ul>
-            <form class="d-flex me-2" style="margin-bottom: 5px;display: none;" id="activeDiv" >
-              <label class="switch" >
-                <input type="checkbox" id="active-btn" onclick="manageSocket();">
-                <span class="slider round"></span>
-              </label>
-            </form>
-            <form class="d-flex">
-              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-              <button class="btn btn-success" type="submit">Search</button>
-            </form>
-          </div>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow fixed-top ms-2 me-2 mt-2">
+      <div class="container">
+        <a class="navbar-brand" href="#"><h3><b>< MyCode /></b></h3></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ms-auto">
+            {% if user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'user:logout' %}"><h5><b>Logout</b></h5></a>
+            </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#"><h5><b>Start Call</b></h5></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'app:startRoom' %}"><h5><b>Host Meet</b></h5></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#"><h5><b>Join Meet</b></h5></a>
+              </li>
+            {% else %}
+              <li class="nav-item active">
+                <a class="nav-link" href="{% url 'user:loginView' %}"><h5><b>Login</b></h5></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'user:registerView' %}"><h5><b>Register</b></h5></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#"><h5><b>About</b></h5></a>
+              </li>
+            {% endif %}
+          </ul>
         </div>
-      </nav>
+      </div>
+    </nav>
+    
 
-      <br>
+    
+
+      <br><br>
     {% block content %}
 
     {% endblock content %}
