@@ -16,7 +16,7 @@ def home(request):
 
 @login_required
 def startRoom(request):
-    room_id = str(uuid.uuid4())[:8]
+    room_id = str(uuid.uuid4())[0]
     return redirect("app:enterRoom", room_id=room_id)
 
 @login_required
@@ -31,7 +31,7 @@ def enterRoom(request, room_id):
         "online_users" : online_users,
         "room_id" : room_id
     }
-    return render(request, "app/sender1.html", context=context)
+    return render(request, "app/sender2.html", context=context)
 
 def locationSharing(request):
     latitude = request.GET.get("lat")

@@ -21,11 +21,11 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(
             self.room_group_name,
             {
-                'type' : 'online_traffic',
-                'action' : 'remove',
+                'type' : 'chatroom_message',
                 'to' : "all",
-                'from' : {"id":user_profile.unique_id, "name": self.scope['user'].username}
-
+                'from' : {"id":user_profile.unique_id, "name": self.scope['user'].username},
+                'event' : 'online_traffic',
+                'message' : "remove"
             }
         )
         await self.channel_layer.group_discard(
@@ -50,23 +50,15 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
             print(f"[ {from_['id']} logged in. ]")
             online_users = add_remove_online_user("add", from_["id"])
             print(online_users)
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type' : 'online_traffic',
-                    'action' : 'add',
-                    'to' : from_,
-                    'from' : from_
-                }
-            )
 
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
                     'type' : 'chatroom_message',
-                    'message' : f"New joinee {from_}",
-                    'to' : to,
-                    'from' : from_
+                    'message' : "add",
+                    'to' : "all",
+                    'from' : from_,
+                    "event" : "online_traffic",
                 }
             )
         elif msgType == "offer":
@@ -107,7 +99,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 {
                     'type' : 'joiner',
-                    "to" : from_,
+                    "to" : "all",
                     "from" : from_
                 }
             )
@@ -121,21 +113,22 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
                     "from" : from_
                 }
             )
-        
-    async def online_traffic(self, event):
-        action = event['action']
-        await self.send(text_data=json.dumps({
-            'type' : 'online_traffic',
-            'action' : action,
-            'to': event["to"],
-            'from': event['from']
-        })
-        )
+        elif msgType == "chat_message":
+             await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type' : 'chatroom_message',
+                    'message' : text_data_json["message"],
+                    'to' : from_,
+                    'from' : from_,
+                    "event" : "chat_message"
+                }
+            )
     
     async def chatroom_message(self, event):
         message = event['message']
         await self.send(text_data=json.dumps({
-            'type' : 'online',
+            'type' : event["event"],
             'message': message,
             'to': event["to"],
             'from': event['from']

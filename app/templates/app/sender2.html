@@ -83,9 +83,12 @@
           margin-left: 10px;
       }
 
+      #sidebar{
+        height: 580px !important;
+      }
 
-      #chat-box {
-          overflow-y:scroll;
+      .chat-messages {
+          overflow: auto;
       }
       </style>
   
@@ -93,46 +96,78 @@
     </head>
     <body>
 
-      <div class="container-fluid">
-        <div class="row flex-nowrap">
-            <main class="col ps-md-2 pt-2">
-              <div class="row m-2" id="video-div">
+    <div>
+        <div class="row">
+            <div class="col">
+                <div class="row m-2" id="video-div">
 
-              </div>
-              <header class="d-flex fixed-bottom flex-wrap align-items-center justify-content-center justify-content-md-between py-1 border-bottom" style="background-color: rgb(31, 30, 30);">
-                <a type="button" onclick="navigator.clipboard.writeText(window.location.protocol+'//'+window.location.host+'{% url 'app:enterRoom' room_id %}');" class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-dark text-decoration-none ms-4">
-                  <h6 style="color: white;"><span id="date-time"></span> | {{room_id}}</h6>
-                </a>
-          
-                <ul class="nav col-12 col-md-auto justify-content-center mb-md-0">
-                  <li class="chat-icon"><a type="button" class="nav-link px-2 link-secondary" onclick="muteVideo();"><i class="fas fa-video " style="color: #2870de;" id="videoBtn"></i></a></li>
-                  <li class="chat-icon"><a type="button" class="nav-link px-2 link-dark" onclick="muteAudio();"><i class="fas fa-microphone " style="color: #2870de;" id="audioBtn" ></i></a></li>
-                  <li class="chat-icon"><a href="#" class="nav-link px-2 link-dark" id=""><i class="fas fa-desktop " style="color: white;"></i></a></li>
-                  <li class="chat-icon"><a href="#" class="nav-link px-2 link-dark" id="" data-bs-target="#sidebar" data-bs-toggle="collapse"><i class="fas fa-comment-alt " style="color: white;"></i></a></li>
-                  <li class="chat-icon"><a href="{% url 'app:home' %}" class="nav-link px-2 link-dark" id=""><i class="fas fa-sign-out-alt " style="color: red;"></i></a></li>
-                </ul>
-          
-                <div class="col-md-3 text-end">
-                  <button type="button" class="btn btn-outline-primary me-2">Login</button>
-                  <button type="button" class="btn btn-primary">Sign-up</button>
                 </div>
-              </header>
-              
-            </main>
-            <div class="col-auto px-0">
-              <div id="sidebar" class="collapse collapse-horizontal show" >
-                  <div id="sidebar-nav" class="list-group border-0 rounded-5 text-sm-start h-100 me-3 mt-3 mb-3" style="background-color: cornsilk;">
-                      <div class="chat-users">
-                        <div class="users-list" id="online-list">
-                        </div>
-                      </div>
-                  </div>
-              </div>
             </div>
-        </div>     
-      </div>
+            <div class="col-3 collapse me-4" style="background-color: cornsilk;height: 580px;border-radius: 10px;overflow-y:scroll;" id="sidebar">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Online Users</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">Chat</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">Info</button>
+                    </li>
+                  </ul>
+                  <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                        <div class="chat-users">
+                            <div class="users-list" id="online-list">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                        <div id="chat-box">
+                            <div class="chat-message">
+								<div class="flex-shrink-1 rounded ml-2">
+									<div class="font-weight-bold mb-1 chat-name">Sharon Lessman <span class="chat-time"></span></div>
+									Sit meis deleniti eu, pri vidit meliore docendi ut, an eum erat animal commodo.
+								</div>
+							</div>
+
+                        </div>
+                        <div class="flex-grow-0 py-2">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Type your message" id="inputMsg">
+                                <button class="btn btn-primary" onclick="sendMessage();">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">...</div>
+                  </div>                  
+            </div>
+        </div>
+        
+        <header class="d-flex fixed-bottom flex-wrap align-items-center justify-content-center justify-content-md-between py-1 border-bottom" style="background-color: rgb(31, 30, 30);">
+            <a type="button" onclick="navigator.clipboard.writeText(window.location.protocol+'//'+window.location.host+'{% url 'app:enterRoom' room_id %}');" class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-decoration-none ms-4">
+              <h6 style="color: white;"><span id="date-time"></span> | {{room_id}}</h6>
+              <h4><i class="far fa-clipboard ms-3" type="button" style="color:white;"></i></h4>
+            </a>
+            
+      
+            <ul class="nav col-12 col-md-auto justify-content-center mb-md-0">
+              <li class="chat-icon"><a type="button" class="nav-link px-2 link-secondary" onclick="muteVideo();"><i class="fas fa-video " style="color: #2870de;" id="videoBtn"></i></a></li>
+              <li class="chat-icon"><a type="button" class="nav-link px-2 link-dark" onclick="muteAudio();"><i class="fas fa-microphone " style="color: #2870de;" id="audioBtn" ></i></a></li>
+              <li class="chat-icon"><a href="#" class="nav-link px-2 link-dark" id="" onclick="shareScreen();"><i class="fas fa-desktop " style="color: white;"></i></a></li>
+              <li class="chat-icon"><a href="#" class="nav-link px-2 link-dark" id="" data-bs-target="#sidebar" data-bs-toggle="collapse"><i class="fas fa-comment-alt " style="color: white;"></i></a></li>
+              <li class="chat-icon"><a href="{% url 'app:home' %}" class="nav-link px-2 link-dark" id=""><i class="fas fa-sign-out-alt " style="color: red;"></i></a></li>
+            </ul>
+      
+            <div class="col-md-3 text-end">
+              <button type="button" class="btn btn-outline-primary me-2">Login</button>
+              <button type="button" class="btn btn-primary">Sign-up</button>
+            </div>
+        </header>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
-        <script>
+    <script>
   
   function updateTime(){
     document.getElementById('date-time').innerText=moment(Date.now()).format( 'Do MMMM, YYYY h:mm a');
@@ -146,11 +181,13 @@
   // let callDialog = document.getElementById("call-dialog");
   // let receiveDialog = document.getElementById("receive-dialog");
   let onlineList = document.getElementById("online-list");
+  let chatList = document.getElementById("chat-box");
   // let activeBtn = document.getElementById("active-btn");
   // let myPosition = document.getElementById("position");
   let audioBtn = document.getElementById("audioBtn");
   let videoBtn = document.getElementById("videoBtn");
   let localVideoStream;
+  let localScreenStream;
   let call_to;
   let peerConnection = {};
   let remoteOffer;
@@ -158,6 +195,7 @@
   let showVideo = true;
   let playAudio = true;
   let videoDialog = document.getElementById("video-div");
+  let videoElement;
 
   // document.getElementById("activeDiv").style.display = "block";
   // activeBtn.style.display = "block";
@@ -186,7 +224,7 @@
         {   username: "WtJcHNTgNpN90FSvMVmZtWWVztiHEhbFfsdRyMS1f_PoMfbjWJSW_rVXiivC4VCOAAAAAGGZQvNhc2hpc2hzYXNtYWwx",   
         credential: "6e26a8e4-4a32-11ec-8f0c-0242ac140004",   
         urls: [       
-        "turn:bn-turn1.xirsys.com:80?transport=udp",       
+            "turn:bn-turn1.xirsys.com:80?transport=udp",       
             "turn:bn-turn1.xirsys.com:3478?transport=udp",       
             "turn:bn-turn1.xirsys.com:80?transport=tcp",       
             "turn:bn-turn1.xirsys.com:3478?transport=tcp",       
@@ -196,8 +234,16 @@
     }
 
   const mediaConstraints = {
+    "video" : {mediaSource: "screen"},
+    audio: {
+        echoCancellation: true,
+        noiseSuppression: true
+    }
+  }
+
+  const screenConstraints =  {
     "video" : true,
-    "audio" : true
+    audio: true
   }
 
   let iceCandidatesList = {};
@@ -212,9 +258,10 @@
       audio.play();
   }
 
-  function accessMedia(user){
+  function accessMedia(user, screen=false){
       console.log("access media "+myDetails.id)
-      return navigator.mediaDevices.getUserMedia(mediaConstraints)
+      console.log(mediaConstraints)
+        return navigator.mediaDevices.getUserMedia(screenConstraints)
         .then(stream => {
             localVideoStream = stream;
             muteAudio();
@@ -236,16 +283,7 @@
                 "to": myDetails,
                 "from": myDetails
             }));
-            onlineList.innerHTML += 
-              `
-                <div class="chat-user" id='${myDetails.id}'>
-                    <img class="chat-avatar ms-2 me-2" src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="">
-                    <div class="chat-user-name">
-                        <a href="#">${myDetails.name}</a>
-                    </div>
-                    <a type="button" class="pin-icon"><i class="fas fa-thumbtack"></i></a>
-                </div>
-                `
+            
             accessMedia(myDetails).then(
               bool => {
                 playEnterRoom();
@@ -260,11 +298,39 @@
 
       chatSocket.onmessage = (e) =>{
         const data = JSON.parse(e.data);
-        // console.log(data);
+        console.log(data);
 
         let type = data.type;
         let user = data.from;
-        if (data.to.id == myDetails.id){
+        if (data.to == "all"){
+            if (type == "online_traffic"){
+                let action = data.message;
+                if (action == "remove"){
+                    var elem = document.getElementById(user.id);
+                    if (elem){
+                      elem.parentNode.removeChild(elem);
+                    }
+                   
+                }
+                else if (action == "add"){
+                    onlineList.innerHTML += 
+                    `
+                    <div class="chat-user" id='${user.id}'>
+                        <img class="chat-avatar ms-2 me-2" src="https://icon-library.com/images/icon-batman/icon-batman-20.jpg" alt="">
+                        <div class="chat-user-name">
+                            <a href="#">${user.name}</a>
+                        </div>
+                        <a type="button" class="pin-icon"><i class="fas fa-thumbtack"></i></a>
+                    </div>
+                    `
+                }
+            }
+            if (type == "joiner" && user.id != myDetails.id){
+                iceCandidatesList[user.id] = [];
+                call(user);
+            }
+        }
+        else if (data.to.id == myDetails.id){
             if (type == "success_join"){
                 iceCandidatesList[user.id] = [];
                 call(user);
@@ -276,7 +342,7 @@
             }
             else if (type == "answer"){
                 console.log("Call answered")
-                peerConnection[user.id].pc.setRemoteDescription(data.answer);
+                peerConnection[user.id].pc.setRemoteDescription( data.answer );
             }
             else if (type == "candidate"){
                 console.log("ICE candidate received")
@@ -284,33 +350,16 @@
             }
         }
         else{
-            if (type == "joiner"){
-                iceCandidatesList[user.id] = [];
-                call(user, true);
-            }
-            else if (type == "online_traffic"){
-                let action = data.action;
-                if (action == "remove"){
-                    var elem = document.getElementById(user.id);
-                    if (elem){
-                      elem.parentNode.removeChild(elem);
-                    }
-                    elem = document.getElementById("v-"+user.id);
-                    elem.parentNode.removeChild(elem);
-                   
-                }
-                else{
-                    onlineList.innerHTML += 
-                    `
-                    <div class="chat-user" id='${user.id}'>
-                                  <img class="chat-avatar ms-2 me-2" src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="">
-                                  <div class="chat-user-name">
-                                      <a href="#">${user.name}</a>
-                                  </div>
-                                  <a type="button" class="pin-icon"><i class="fas fa-thumbtack"></i></a>
-                              </div>
-                    `
-                }
+            if (type == "chat_message"){
+                chatList.innerHTML += 
+                `
+                <div class="chat-message">
+                    <div class="flex-shrink-1 rounded ml-2">
+                        <div class="font-weight-bold mb-1 chat-name"><b>${user.name}</b><span class="chat-time"></span></div>
+                        ${data.message}
+                    </div>
+                </div>
+                `
             }
         }
       }
@@ -334,15 +383,13 @@
   }
   connectWebSocket();
   function handleIncomingICEcandidate(user, data){
-      if (peerConnection[user.id]){
+      if (peerConnection[user.id] && data.candidate){
         peerConnection[user.id].pc.addIceCandidate(data.candidate);
       }
       else{
           console.log("RTC peer connection not set");
           iceCandidatesList[user.id].push(data.candidate);
       }
-      
-
   }
 
   function handleIncomingcall(user, data){
@@ -367,23 +414,10 @@
 
 
   function createAndSendAnswer(user, remoteOffer){
-    peerConnection[user.id].pc.setRemoteDescription(remoteOffer);
-    peerConnection[user.id].pc.createAnswer((answer) => {
+    console.log("hello")
+    peerConnection[user.id].pc.setRemoteDescription( new RTCSessionDescription(remoteOffer));
+    peerConnection[user.id].pc.createAnswer( (answer) => {
       peerConnection[user.id].pc.setLocalDescription(answer);
-        if ( iceCandidatesList[user.id].length >0 ){
-          for (let i=0; i<iceCandidatesList[user.id].length; i++){
-              try {
-                  peerConnection[user.id].pc.addIceCandidate(iceCandidatesList[user.id][i]);
-              }
-              catch (error) {
-                  console.log(error);
-              }
-          }
-          iceCandidatesList[user.id] = [];
-        }
-        else{
-            console.log("No ICE candidates found!");
-        }
         sendSocket({
             type: "answer",
             answer: answer
@@ -392,17 +426,19 @@
             console.log(error);
           })
         }
+
   function createAndSendOffer(user){
       console.log("offer true")
       peerConnection[user.id].pc.createOffer((offer) => {
+          console.log("hello")
+          peerConnection[user.id].pc.setLocalDescription(offer);
           sendSocket({
-              type: "offer",
-              offer: offer
-          }, user, myDetails)
-        peerConnection[user.id].pc.setLocalDescription(offer)
-      }, (error) => {
-        console.log(error)
-      })
+                type: "offer",
+                offer: offer
+            }, user, myDetails)
+        }, (error) => {
+          console.log("Error");
+      });
   }
 
   
@@ -412,12 +448,15 @@
     }
 
   function createRTCPeerConnection(user){
-    console.log("RTCPeerConnection connected");
+      console.log("RTCPeerConnection connected");
       peerConnection[user.id] = {"name" : user.name, "pc" : new RTCPeerConnection(ICEconfig)};
       // peerConnection = new RTCPeerConnection(null);
       peerConnection[user.id].pc.onaddstream = event => handleAddStream(user, event);
-      peerConnection[user.id].pc.onicecandidate = event => handleICEcandidate(user, event);
-      peerConnection[user.id].pc.addStream(localVideoStream);
+      peerConnection[user.id].pc.onicecandidate = (event) => handleICEcandidate(user, event);
+      if (localVideoStream){
+          peerConnection[user.id].pc.addStream(localVideoStream);
+      }
+      
       return;
   }
   
@@ -453,6 +492,7 @@
 
     if (localVideoStream){
       showVideo = !showVideo;
+      console.log(showVideo)
       if (showVideo){
         videoBtn.style.color = "#2870de";
       }
@@ -467,21 +507,62 @@
     }
   }
 
-  function onVideoAdd(user, stream){
-      var vidDiv = document.createElement('div');
-      vidDiv.setAttribute('class', 'col-4 vid-element')
-      var vidElement = document.createElement("VIDEO");
-      vidElement.setAttribute('width', 320);
-      vidElement.setAttribute('height', 240);
-      vidElement.setAttribute('autoplay', '');
-      vidElement.setAttribute('muted', '');
-      vidElement.setAttribute('class', 'user-video');
-      vidDiv.setAttribute('id', `v-${user.id}`);
-      vidElement.srcObject = stream;
-      vidDiv.appendChild(vidElement);
-      videoDialog.appendChild(vidDiv);
+  function shareScreen(){
+    accessMedia(myDetails, screen=true);
+    replaceStreamTrack(localScreenStream);
   }
-        </script>
+
+  function replaceStreamTrack(stream){
+    for ( let p in peerConnection ) {
+        let sr = p.getLocalStreams();
+        p.removeStream( sr[0] );
+        peerConnection.addLocalStream(stream);
+    }
+  }
+
+  function onVideoAdd(user, stream){
+    console.log(user);
+    if (document.getElementById(`vid-${user.id}`)){
+        document.getElementById(`vid-${user.id}`).srcObject = stream;
+    }
+    else{
+        var vidDiv = document.createElement('div');
+        vidDiv.setAttribute('class', 'col-5 vid-element')
+        vidElement = document.createElement("VIDEO");
+        vidElement.setAttribute('width', 640);
+        vidElement.setAttribute('height', 460);
+        vidElement.setAttribute('autoplay', '');
+        vidElement.setAttribute('muted', '');
+        vidElement.setAttribute('class', 'user-video');
+        vidElement.setAttribute('id', `vid-${user.id}`);
+        vidDiv.setAttribute('id', `v-${user.id}`);
+        vidElement.srcObject = stream;
+        vidDiv.appendChild(vidElement);
+        videoDialog.appendChild(vidDiv);
+        console.log(stream);
+        document.getElementById(`vid-${user.id}`).volume =0;
+    }
+  }
+    
+  function sendMessage(){
+      msg = document.getElementById("inputMsg").value;
+      if (msg){
+        chatList.innerHTML += 
+        `
+        <div class="chat-message">
+            <div class="flex-shrink-1 rounded ml-2">
+                <div class="font-weight-bold mb-1 chat-name"><b>${myDetails.name}</b><span class="chat-time"></span></div>
+                ${msg}
+            </div>
+        </div>
+        `
+          sendSocket({
+              "type": "chat_message",
+              "message": msg
+          }, "all", myDetails)
+      }
+  }
+    </script>
   </body>
 </html>
 

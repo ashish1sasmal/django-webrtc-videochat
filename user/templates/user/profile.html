@@ -1,0 +1,100 @@
+{% extends "app/base.html" %}
+{% block content %}
+
+<style>
+    .main-div{
+        position: absolute;
+        left:   15%;
+    }
+
+    .sub-divs{
+        border-radius: 10px;
+        box-shadow: 0 8px 25px 0 rgba(74, 174, 217, 0.4), 0 6px 40px 0 rgba(74, 174, 217, 0.19);
+    }
+
+    .profile-img{
+        height: 130px;
+        width: 130px;
+        border-radius: 50%;
+        border : 3px solid chartreuse;
+    }
+</style>
+
+<br><br><br>
+<div class="container main-div">
+    <div class="row">
+        <div class="col-md-3 col-sm-12 me-4 sub-divs">
+            <center style="margin: 20px;">
+                <img src="https://www.bootdey.com/img/Content/avatar/avatar6.png" alt="" class="profile-img">
+                <h5 style="margin-top: 15px;">{{profile.user.first_name}}</h5>
+                <p style="margin-bottom: 0px;color: rgb(95, 92, 92);">{{profile.user.email}}</p>
+                <p style="color: rgb(95, 92, 92);">Last Seen : {{profile.last_login}}</p>
+
+                <button class="btn btn-sm btn-primary">Follow</button>
+                <button class="btn btn-sm btn-outline-primary">Message</button>
+                <hr>
+            </center>
+
+            <div style="margin: 20px;color: rgb(73, 72, 72);">
+                <div class="row">
+                    <div class="col-4"><h4><i class="fab fa-twitter" style="color: rgb(9, 169, 204);"></i></h4></div>
+                    <div class="col-8"><p>@darklord</p></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-4"><h4><i class="fab fa-facebook-f me-2" style="color: rgb(6, 135, 163);"></i> </h4></div>
+                    <div class="col-8"><p>@darklord</p></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-4"><h4><i class="fab fa-instagram me-2" style="color: rgb(204, 0, 170);"></i></h4></div>
+                    <div class="col-8"><p>@darklord</p></div>
+                </div>
+                
+            </div>
+            
+            
+        </div>
+
+        <div class="col-md-6 col-sm-12 ms-4 sub-divs p-4">
+            <h5>Profile</h5>
+            <hr>
+            <div class="row">
+                <div class="col-md-3 col-sm-12 me-2 mb-3"><p>Full Name : </p></div>
+                <div class="col-md-8 col-sm-12"> <input type="text" class="form-control profile-input" name="" id="" value="{{profile.user.first_name}}"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 col-sm-12 me-2 mb-3"><p>Email : </p></div>
+                <div class="col-md-8 col-sm-12"> <input type="text" class="form-control profile-input" name="" id="" value="{{profile.user.email}}"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 col-sm-12 me-2 mb-3"><p>Mobile : </p></div>
+                <div class="col-md-8 col-sm-12"> <input type="text" class="form-control profile-input" name="" id=""></div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 col-sm-12 me-2 mb-3"><p>Address : </p></div>
+                <div class="col-md-8 col-sm-12"> <input type="text" class="form-control profile-input" name="" id=""></div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 col-sm-12 me-2 mb-3"><p>Bio : </p></div>
+                <div class="col-md-8 col-sm-12"> <textarea name="" id="" cols="30" rows="3" class="form-control profile-input"></textarea></div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-3 col-sm-12 me-2 mb-3"></div>
+                <div class="col-md-8 col-sm-12"> <button class="btn btn-success" id="save-btn">Save</button></textarea></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    {% if user.user_profile.unique_id != profile.unique_id %}
+    let inputs = document.getElementsByClassName("profile-input");
+    for (i=0; i<inputs.length; i++){
+        inputs[i].disabled = true ;
+    }
+    document.getElementById("save-btn").style.display = "none";
+    {% endif %}
+</script>
+
+{% endblock content %}

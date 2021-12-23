@@ -7,6 +7,7 @@ User = get_user_model()
 from .models import Profile
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate
+from datetime import datetime
 # Create your views here.
 
 @login_required
@@ -49,9 +50,21 @@ def user_login(request):
         user=authenticate(username=email,password=password)
         print(user)
         if user:
+            user_profile = user.user_profile
+            user_profile.last_login = datetime.now()
+            user_profile.save()
             login(request, user)
             print(user.username + " logged in")
             return Response("success", "successfully logged in", status=200)
         else:
             print("Wrong credentials")
             return Response("failed", "login failed", status=400)
+
+def profile(request, id):
+    if request.method == "POST":
+        pass
+    try:
+        profile = Profile.objects.get(unique_id=id)
+    except Exception as err:
+        return render(request, "app/home.html")
+    return render(request, "user/profile.html", context={"profile": profile})
