@@ -416,7 +416,7 @@
               `<tr id="w-${user.id}">
                   <th scope="row">1</th>
                   <td>${user.name}</td>
-                  <td><button class="btn btn-sm btn-success" onclick="request('${user.id}', 'accept');">Allow</button> <button class="btn btn-sm btn-secondary" onclick="request(-1, 'deny');">Deny</button></td>
+                  <td><button class="btn btn-sm btn-success" onclick="request('${user.id}', 'accept');">Allow</button> <button class="btn btn-sm btn-secondary" onclick="request('${user.id}', 'deny');">Deny</button></td>
                 </tr>`
                 $('#waitModal').modal('show'); 
               }
