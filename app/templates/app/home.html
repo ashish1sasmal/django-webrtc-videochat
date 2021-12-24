@@ -11,14 +11,62 @@
 <br><br><br>
 
 <div class="container">
-  <div class="p-5 mb-4 bg-light rounded-3">
-    <div class="container-fluid py-5" style="background-color: #e8e8e8;">
-      <h1 class="display-5 fw-bold">Hey! Friend :) {{user.username}}</h1>
-      <p class="col-md-8 fs-4">“Live your life, listen to your music way too loud, be crazy and as different as you want to be and always remember you're not alone.”</p>
-      <p class="fs-12"><i>- Andy Biersack</i></p>
-      <a type="button" class="btn btn-primary" href="{% url 'app:startRoom' %}" type="button">Let's Start</a>
+  <div class="row">
+    <div class="col-sm-10 col-md-5 col-lg-5 p-5 mb-4 rounded-3 me-3" style="background-color: #232b2b;color: white;">
+      <caption>Recents</caption>
+      <table class="table" style="color: white;">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Room</th>
+            <th scope="col">Last Seen</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for room in rooms %}
+              <tr>
+                <th scope="row">{{forloop.counter}}</th>
+                <td><a href="{% url 'app:enterRoom' room.room_id %}" style="text-decoration: none;">{{room.room_id}}</a></td>
+                <td>@mdo</td>
+              </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  
+    <div class="col-sm-10 col-md-5 col-lg-5 p-5 mb-4 bg-light rounded-3">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">First</th>
+            <th scope="col">Last</th>
+            <th scope="col">Handle</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">1</th>
+            <td>Mark</td>
+            <td>Otto</td>
+            <td>@mdo</td>
+          </tr>
+          <tr>
+            <th scope="row">2</th>
+            <td>Jacob</td>
+            <td>Thornton</td>
+            <td>@fat</td>
+          </tr>
+          <tr>
+            <th scope="row">3</th>
+            <td colspan="2">Larry the Bird</td>
+            <td>@twitter</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
+  
 </div>
 
 

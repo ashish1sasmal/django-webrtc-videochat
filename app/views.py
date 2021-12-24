@@ -4,6 +4,8 @@ from django.shortcuts import redirect, render
 # Create your views here.
 import uuid
 from django.core.cache import cache
+
+from app.models import ChatRoom
 from .utils import Response
 from .constants import *
 from .service import add_remove_online_user, updateLocationList
@@ -12,24 +14,28 @@ from django.contrib.auth.decorators import login_required
 import uuid
 
 def home(request):
-    return render(request, "app/home.html")
+    if request.user.is_authenticated:
+        rooms = ChatRoom.objects.filter(members__in=[request.user])
+        context={
+            "rooms": rooms
+        }
+    return render(request, "app/home.html", context)
 
 @login_required
 def startRoom(request):
-    room_id = str(uuid.uuid4())[0]
+    room_id = str(uuid.uuid4())[:8]
+    room = ChatRoom(admin=request.user, room_id=room_id)
+    room.save()
+    room.members.add(request.user)
+    room.save()
+    print("[ Chatroom created ]")
     return redirect("app:enterRoom", room_id=room_id)
 
 @login_required
 def enterRoom(request, room_id):
-    user_unique_id = request.user.user_profile.unique_id
-    online_users = cache.get('online_users')
-    if not online_users:
-        online_users = set()
-
+    room = ChatRoom.objects.get(room_id=room_id)
     context = {
-        "username" : user_unique_id,
-        "online_users" : online_users,
-        "room_id" : room_id
+        "room": room
     }
     return render(request, "app/sender2.html", context=context)
 

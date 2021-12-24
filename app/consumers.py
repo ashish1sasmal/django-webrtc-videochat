@@ -1,33 +1,48 @@
 import json
 from typing import Text
+from app.models import ChatRoom, Message
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .service import add_remove_online_user, updateLocationList
+from .service import add_remove_online_user, updateLocationList, add_remove_room_user
 from asgiref.sync import sync_to_async
+from channels.db import database_sync_to_async
 
 class ChatRoomConsumer(AsyncWebsocketConsumer):
+    
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_code']
         self.room_group_name = self.room_name
-
+        
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
         )
         await self.accept()
+        await self.authenticate_user()
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type' : 'chatroom_message',
+                'message' : "add",
+                'to' : "all",
+                'from' : self.user,
+                "event" : "online_traffic",
+            }
+        )
     
     async def disconnect(self, close_code):
-        user_profile = await self.get_user_profile()
-        location_sharing_users = updateLocationList("remove", user_profile.unique_id)
+        
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type' : 'chatroom_message',
                 'to' : "all",
-                'from' : {"id":user_profile.unique_id, "name": self.scope['user'].username},
+                'from' : self.user,
                 'event' : 'online_traffic',
                 'message' : "remove"
             }
         )
+        self.room.online.remove(self.scope["user"])
+        self.room.save()
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
@@ -38,29 +53,25 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         user = self.scope['user']
         return user.user_profile
 
+    @sync_to_async
+    def authenticate_user(self):
+        if self.scope ['user'].is_authenticated:
+            self.room = ChatRoom.objects.get(room_id=self.room_group_name)
+            user = self.scope["user"]
+            self.user = {"id": user.user_profile.unique_id, "name": user.username}
+            self.room.online.add(user)
+            self.room.save()
+
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         print(text_data_json)
         msgType = text_data_json.get("type")
         to = text_data_json.get("to")
         from_ = text_data_json.get("from")
-
         # user_profile = await self.get_user_profile()
         if msgType == "login":
             print(f"[ {from_['id']} logged in. ]")
-            online_users = add_remove_online_user("add", from_["id"])
-            print(online_users)
 
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type' : 'chatroom_message',
-                    'message' : "add",
-                    'to' : "all",
-                    'from' : from_,
-                    "event" : "online_traffic",
-                }
-            )
         elif msgType == "offer":
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -114,7 +125,9 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
                 }
             )
         elif msgType == "chat_message":
-             await self.channel_layer.group_send(
+            if self.is_auth:
+                await self.save_message(text_data_json["message"])
+            await self.channel_layer.group_send(
                 self.room_group_name,
                 {
                     'type' : 'chatroom_message',
@@ -171,3 +184,8 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
             'to': event["to"],
             'from': event['from']
         }))
+
+    @database_sync_to_async
+    def save_message(self, message):
+        msg = Message(user=self.scope['user'], to=self.room, text=message)
+        msg.save()

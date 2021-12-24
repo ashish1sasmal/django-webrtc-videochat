@@ -119,6 +119,16 @@
                     <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
                         <div class="chat-users">
                             <div class="users-list" id="online-list">
+                              {% for user in room.online.all %}
+                                  <div class="chat-user" id='{{user.id}}'>
+                                    <img class="chat-avatar ms-2 me-2" src="https://icon-library.com/images/icon-batman/icon-batman-20.jpg" alt="">
+                                    <div class="chat-user-name">
+                                        <a href="#">{{user.username}}</a>
+                                    </div>
+                                    <a type="button" class="pin-icon"><i class="fas fa-thumbtack"></i></a>
+                                </div>
+                              {% endfor %}
+                              
                             </div>
                         </div>
                     </div>
@@ -145,8 +155,8 @@
         </div>
         
         <header class="d-flex fixed-bottom flex-wrap align-items-center justify-content-center justify-content-md-between py-1 border-bottom" style="background-color: rgb(31, 30, 30);">
-            <a type="button" onclick="navigator.clipboard.writeText(window.location.protocol+'//'+window.location.host+'{% url 'app:enterRoom' room_id %}');" class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-decoration-none ms-4">
-              <h6 style="color: white;"><span id="date-time"></span> | {{room_id}}</h6>
+            <a type="button" onclick="navigator.clipboard.writeText(window.location.protocol+'//'+window.location.host+'{% url 'app:enterRoom' room.room_id %}');" class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-decoration-none ms-4">
+              <h6 style="color: white;"><span id="date-time"></span> | {{room.room_id}}</h6>
               <h4><i class="far fa-clipboard ms-3" type="button" style="color:white;"></i></h4>
             </a>
             
@@ -174,7 +184,7 @@
   }
   setInterval(updateTime, 1000);
   
-  let myDetails = {"id": '{{user.user_profile.unique_id}}', "name": '{{user.username}}'};
+  let myDetails = {"id": '{{request.user.user_profile.unique_id}}', "name": '{{request.user.username}}'};
   let chatSocket;
   // let localVideo = document.getElementById("video-1");
   // let remoteVideo = document.getElementById("remote-video");
@@ -234,16 +244,16 @@
     }
 
   const mediaConstraints = {
+    "video" : true,
+    audio: true
+  }
+
+  const screenConstraints =  {
     "video" : {mediaSource: "screen"},
     audio: {
         echoCancellation: true,
         noiseSuppression: true
     }
-  }
-
-  const screenConstraints =  {
-    "video" : true,
-    audio: true
   }
 
   let iceCandidatesList = {};
@@ -261,7 +271,7 @@
   function accessMedia(user, screen=false){
       console.log("access media "+myDetails.id)
       console.log(mediaConstraints)
-        return navigator.mediaDevices.getUserMedia(screenConstraints)
+        return navigator.mediaDevices.getUserMedia(mediaConstraints)
         .then(stream => {
             localVideoStream = stream;
             muteAudio();
@@ -272,9 +282,24 @@
         });
   }
 
+  function accessScreen(user){
+      console.log("access media "+myDetails.id)
+      console.log(mediaConstraints)
+        return navigator.mediaDevices.getDisplayMedia(screenConstraints)
+        .then(stream => {
+            localScreenStream = stream;
+            muteAudio(screen=true);
+            muteVideo(screen=true);
+            onVideoAdd(user,localScreenStream);
+            console.log(localScreenStream);
+        }).catch(function (error) {
+          console.log(error)
+        });
+  }
+
   function connectWebSocket(){
       var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-      chatSocket = new WebSocket(ws_scheme+'://' +window.location.host +'/ws/chat/{{room_id}}/');
+      chatSocket = new WebSocket(ws_scheme+'://' +window.location.host +'/ws/chat/{{room.room_id}}/');
       console.log("Websocket connected");
 
       chatSocket.onopen = event =>{
@@ -296,7 +321,7 @@
             
       }
 
-      chatSocket.onmessage = (e) =>{
+      chatSocket.onmessage = async(e) =>{
         const data = JSON.parse(e.data);
         console.log(data);
 
@@ -327,7 +352,7 @@
             }
             if (type == "joiner" && user.id != myDetails.id){
                 iceCandidatesList[user.id] = [];
-                call(user);
+                await call(user);
             }
         }
         else if (data.to.id == myDetails.id){
@@ -338,7 +363,7 @@
             else if (type == "offer"){
               iceCandidatesList[user.id] = [];
                 console.log("Receiving call from "+user);
-                handleIncomingcall(user, data);
+                await handleIncomingcall(user, data);
             }
             else if (type == "answer"){
                 console.log("Call answered")
@@ -392,9 +417,9 @@
       }
   }
 
-  function handleIncomingcall(user, data){
-      createRTCPeerConnection(user);
-      createAndSendAnswer(user, data.offer);
+  async function handleIncomingcall(user, data){
+      await createRTCPeerConnection(user);
+      await createAndSendAnswer(user, data.offer);
   }
 
   function manageSocket(){
@@ -427,7 +452,7 @@
           })
         }
 
-  function createAndSendOffer(user){
+  async function createAndSendOffer(user){
       console.log("offer true")
       peerConnection[user.id].pc.createOffer((offer) => {
           console.log("hello")
@@ -442,19 +467,22 @@
   }
 
   
-  function call(user){
-        createRTCPeerConnection(user);
-        createAndSendOffer(user);
+  async function call(user){
+        await createRTCPeerConnection(user);
+        await createAndSendOffer(user);
     }
 
-  function createRTCPeerConnection(user){
+  async function createRTCPeerConnection(user, offer=false){
       console.log("RTCPeerConnection connected");
-      peerConnection[user.id] = {"name" : user.name, "pc" : new RTCPeerConnection(ICEconfig)};
+      peerConnection[user.id] = {"name" : user.name, "id":user.id, "pc" : new RTCPeerConnection(ICEconfig)};
       // peerConnection = new RTCPeerConnection(null);
       peerConnection[user.id].pc.onaddstream = event => handleAddStream(user, event);
       peerConnection[user.id].pc.onicecandidate = (event) => handleICEcandidate(user, event);
       if (localVideoStream){
           peerConnection[user.id].pc.addStream(localVideoStream);
+      }
+      if (offer){
+          peerConnection[user.id].pc.onnegotiationneeded = async(event) => createAndSendOffer(user);
       }
       
       return;
@@ -473,9 +501,14 @@
       }, user, myDetails)
   }
 
-  function muteAudio(){
-
-    if (localVideoStream){
+  function muteAudio(screen=false){
+    stream = localVideoStream;
+    console.log("screenA "+screen);
+    if (screen){
+      stream = localScreenStream;
+    }
+    console.log(stream);
+    if (stream){
       playAudio = !playAudio;
       if (playAudio){
         audioBtn.style.color = "#2870de";
@@ -483,14 +516,18 @@
       else{
         audioBtn.style.color = "red";
       }
-      localVideoStream.getAudioTracks()[0].enabled = playAudio;
+      if (stream.getAudioTracks()[0])
+          stream.getAudioTracks()[0].enabled = playAudio;
     }
-   
   }
 
-  function muteVideo(){
-
-    if (localVideoStream){
+  function muteVideo(screen=false){
+    stream = localVideoStream;
+    console.log("screenV "+screen);
+    if (screen){
+      stream = localScreenStream;
+    }
+    if (stream){
       showVideo = !showVideo;
       console.log(showVideo)
       if (showVideo){
@@ -499,49 +536,57 @@
       else{
         videoBtn.style.color = "red";
       }
-      
-      localVideoStream.getVideoTracks()[0].enabled = showVideo;
+      stream.getVideoTracks()[0].enabled = showVideo;
     }
     else{
       alert("Please allow video permission.");
     }
   }
 
-  function shareScreen(){
-    accessMedia(myDetails, screen=true);
-    replaceStreamTrack(localScreenStream);
+  async function shareScreen(){
+    // accessScreen(myDetails);
+    // replaceStreamTrack(localScreenStream);
+    if (!localScreenStream) {
+      localScreenStream = await navigator.mediaDevices.getDisplayMedia();
+    }
+    senders.find(sender => sender.track.kind === 'video').replaceTrack(localScreenStream.getTracks()[0]);
+
   }
 
   function replaceStreamTrack(stream){
     for ( let p in peerConnection ) {
-        let sr = p.getLocalStreams();
-        p.removeStream( sr[0] );
-        peerConnection.addLocalStream(stream);
+      if (p.pc){
+        p.pc.getSenders().forEach(function(sender){
+          console.log(sender);
+        stream.getTracks.forEach(function(track){
+            if(track == sender.track){
+              p.pc.removeTrack(sender);
+            }
+          })
+      });
+        createAndSendOffer({"name": pc.name, "id":pc.id});
+      }
+      
     }
   }
 
   function onVideoAdd(user, stream){
     console.log(user);
-    if (document.getElementById(`vid-${user.id}`)){
-        document.getElementById(`vid-${user.id}`).srcObject = stream;
-    }
-    else{
-        var vidDiv = document.createElement('div');
-        vidDiv.setAttribute('class', 'col-5 vid-element')
-        vidElement = document.createElement("VIDEO");
-        vidElement.setAttribute('width', 640);
-        vidElement.setAttribute('height', 460);
-        vidElement.setAttribute('autoplay', '');
-        vidElement.setAttribute('muted', '');
-        vidElement.setAttribute('class', 'user-video');
-        vidElement.setAttribute('id', `vid-${user.id}`);
-        vidDiv.setAttribute('id', `v-${user.id}`);
-        vidElement.srcObject = stream;
-        vidDiv.appendChild(vidElement);
-        videoDialog.appendChild(vidDiv);
-        console.log(stream);
-        document.getElementById(`vid-${user.id}`).volume =0;
-    }
+      var vidDiv = document.createElement('div');
+      vidDiv.setAttribute('class', 'col-5 vid-element')
+      vidElement = document.createElement("VIDEO");
+      vidElement.setAttribute('width', 640);
+      vidElement.setAttribute('height', 460);
+      vidElement.setAttribute('autoplay', '');
+      vidElement.setAttribute('muted', '');
+      vidElement.setAttribute('class', 'user-video');
+      vidElement.setAttribute('id', `vid-${user.id}`);
+      vidDiv.setAttribute('id', `v-${user.id}`);
+      vidElement.srcObject = stream;
+      vidDiv.appendChild(vidElement);
+      videoDialog.appendChild(vidDiv);
+      console.log(stream);
+      document.getElementById(`vid-${user.id}`).volume =0;
   }
     
   function sendMessage(){

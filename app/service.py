@@ -15,6 +15,20 @@ def add_remove_online_user(action, username):
     cache.set("online_users" ,online_users)
     return online_users
 
+def add_remove_room_user(action, user, room_id):
+    online_users = cache.get(f'r-{room_id}')
+    if not online_users:
+        online_users = {}
+    if action == "add":
+        online_users[user["id"]] = user
+    elif action == "remove":
+        online_users.pop(user["id"],None)
+    else:
+        return False
+    print(action, username)
+    cache.set(f"r-{room_id}" ,online_users)
+    return online_users
+
 def updateLocationList(action, username, latitude=None, longitude=None):
     location_users = cache.get("location_sharing")
     if not location_users:
