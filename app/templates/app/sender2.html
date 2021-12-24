@@ -30,6 +30,8 @@
       
 
       .vid-element video {
+        max-width: 640px;
+        max-height: 460px;
         width: 100%    !important;
         height: 100%   !important;
         border-radius: 12px;
@@ -95,8 +97,37 @@
       
     </head>
     <body>
-
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#waitModal">
+        Launch demo modal
+      </button>
     <div>
+      <div class="modal fade" id="waitModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog  modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Waiting List</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table table-hover table-bordered">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">User</th>
+                      <th scope="col" colspan="2">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="waitlist">
+                  </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" onclick="request(-1, 'accept');" class="btn btn-primary">Admit all</button>
+            </div>
+          </div>
+        </div>
+      </div>
         <div class="row">
             <div class="col">
                 <div class="row m-2" id="video-div">
@@ -177,8 +208,10 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
-    <script>
-  
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+  <script>
   function updateTime(){
     document.getElementById('date-time').innerText=moment(Date.now()).format( 'Do MMMM, YYYY h:mm a');
   }
@@ -198,6 +231,7 @@
   let videoBtn = document.getElementById("videoBtn");
   let localVideoStream;
   let localScreenStream;
+  let localStream;
   let call_to;
   let peerConnection = {};
   let remoteOffer;
@@ -206,7 +240,7 @@
   let playAudio = true;
   let videoDialog = document.getElementById("video-div");
   let videoElement;
-
+  let waitList = [];
   // document.getElementById("activeDiv").style.display = "block";
   // activeBtn.style.display = "block";
   // activeBtn.checked = false;
@@ -257,7 +291,7 @@
   }
 
   let iceCandidatesList = {};
-
+  let conn = [];
   function play() {
 	  var audio = new Audio('https://2u039f-a.akamaihd.net/downloads/ringtones/files/mp3/xperia-artic-54206.mp3');
 	  audio.play();
@@ -274,6 +308,7 @@
         return navigator.mediaDevices.getUserMedia(mediaConstraints)
         .then(stream => {
             localVideoStream = stream;
+            localStream = stream;
             muteAudio();
             muteVideo();
             onVideoAdd(user,localVideoStream);
@@ -282,15 +317,16 @@
         });
   }
 
-  function accessScreen(user){
+  async function accessScreen(user){
       console.log("access media "+myDetails.id)
       console.log(mediaConstraints)
         return navigator.mediaDevices.getDisplayMedia(screenConstraints)
         .then(stream => {
             localScreenStream = stream;
+            localStream = stream;
             muteAudio(screen=true);
             muteVideo(screen=true);
-            onVideoAdd(user,localScreenStream);
+            // onVideoAdd(user,localScreenStream);
             console.log(localScreenStream);
         }).catch(function (error) {
           console.log(error)
@@ -373,6 +409,19 @@
                 console.log("ICE candidate received")
                 handleIncomingICEcandidate(user, data);
             }
+            else if(type == "join_request"){
+              if (!document.getElementById(`w-${user.id}`)){
+                waitList.push(user.id);
+                document.getElementById("waitlist").innerHTML += 
+              `<tr id="w-${user.id}">
+                  <th scope="row">1</th>
+                  <td>${user.name}</td>
+                  <td><button class="btn btn-sm btn-success" onclick="request('${user.id}', 'accept');">Allow</button> <button class="btn btn-sm btn-secondary" onclick="request(-1, 'deny');">Deny</button></td>
+                </tr>`
+                $('#waitModal').modal('show'); 
+              }
+              
+            }
         }
         else{
             if (type == "chat_message"){
@@ -407,9 +456,10 @@
       }
   }
   connectWebSocket();
+
   function handleIncomingICEcandidate(user, data){
       if (peerConnection[user.id] && data.candidate){
-        peerConnection[user.id].pc.addIceCandidate(data.candidate);
+        peerConnection[user.id].pc.addIceCandidate(new RTCIceCandidate(data.candidate));
       }
       else{
           console.log("RTC peer connection not set");
@@ -442,7 +492,7 @@
     console.log("hello")
     peerConnection[user.id].pc.setRemoteDescription( new RTCSessionDescription(remoteOffer));
     peerConnection[user.id].pc.createAnswer( (answer) => {
-      peerConnection[user.id].pc.setLocalDescription(answer);
+      peerConnection[user.id].pc.setLocalDescription(new RTCSessionDescription( answer));
         sendSocket({
             type: "answer",
             answer: answer
@@ -456,7 +506,7 @@
       console.log("offer true")
       peerConnection[user.id].pc.createOffer((offer) => {
           console.log("hello")
-          peerConnection[user.id].pc.setLocalDescription(offer);
+          peerConnection[user.id].pc.setLocalDescription(new RTCSessionDescription( offer));
           sendSocket({
                 type: "offer",
                 offer: offer
@@ -476,20 +526,25 @@
       console.log("RTCPeerConnection connected");
       peerConnection[user.id] = {"name" : user.name, "id":user.id, "pc" : new RTCPeerConnection(ICEconfig)};
       // peerConnection = new RTCPeerConnection(null);
-      peerConnection[user.id].pc.onaddstream = event => handleAddStream(user, event);
-      peerConnection[user.id].pc.onicecandidate = (event) => handleICEcandidate(user, event);
       if (localVideoStream){
-          peerConnection[user.id].pc.addStream(localVideoStream);
+        localVideoStream.getTracks().forEach( ( track ) => {
+          peerConnection[user.id].pc.addTrack( track, localVideoStream );
+        } );
       }
+
       if (offer){
+        console.log("Creating Offer");
           peerConnection[user.id].pc.onnegotiationneeded = async(event) => createAndSendOffer(user);
       }
-      
+      peerConnection[user.id].pc.onicecandidate = (event) => handleICEcandidate(user, event);
+      peerConnection[user.id].pc.ontrack = event => handleAddStream(user, event);
       return;
   }
   
   function handleAddStream(user, event){
-    onVideoAdd(user, event.stream);
+    console.log("track received");
+    let stream = event.streams[0];
+    onVideoAdd(user, stream);
     }
 
   function handleICEcandidate(user, event){
@@ -502,13 +557,7 @@
   }
 
   function muteAudio(screen=false){
-    stream = localVideoStream;
-    console.log("screenA "+screen);
-    if (screen){
-      stream = localScreenStream;
-    }
-    console.log(stream);
-    if (stream){
+    if (localStream){
       playAudio = !playAudio;
       if (playAudio){
         audioBtn.style.color = "#2870de";
@@ -516,18 +565,13 @@
       else{
         audioBtn.style.color = "red";
       }
-      if (stream.getAudioTracks()[0])
-          stream.getAudioTracks()[0].enabled = playAudio;
+      if (localStream.getAudioTracks()[0])
+          localStream.getAudioTracks()[0].enabled = playAudio;
     }
   }
 
   function muteVideo(screen=false){
-    stream = localVideoStream;
-    console.log("screenV "+screen);
-    if (screen){
-      stream = localScreenStream;
-    }
-    if (stream){
+    if (localStream){
       showVideo = !showVideo;
       console.log(showVideo)
       if (showVideo){
@@ -536,7 +580,7 @@
       else{
         videoBtn.style.color = "red";
       }
-      stream.getVideoTracks()[0].enabled = showVideo;
+      localStream.getVideoTracks()[0].enabled = showVideo;
     }
     else{
       alert("Please allow video permission.");
@@ -548,8 +592,22 @@
     // replaceStreamTrack(localScreenStream);
     if (!localScreenStream) {
       localScreenStream = await navigator.mediaDevices.getDisplayMedia();
+      localStream = localScreenStream;
     }
-    senders.find(sender => sender.track.kind === 'video').replaceTrack(localScreenStream.getTracks()[0]);
+    console.log(peerConnection);
+    let track = localStream.getVideoTracks()[0];
+    for ( let p in peerConnection ) {
+        let sender = peerConnection[p].pc.getSenders ? peerConnection[p].pc.getSenders().find( s => s.track && s.track.kind === track.kind ) : false;
+
+        if(sender){
+            console.log("hello "+track)
+            sender.replaceTrack( track );
+        }
+      
+    }
+    onVideoAdd(myDetails, localScreenStream);
+    muteVideo
+    // senders.find(sender => sender.track.kind === 'video').replaceTrack(localScreenStream.getTracks()[0]);
 
   }
 
@@ -572,6 +630,10 @@
 
   function onVideoAdd(user, stream){
     console.log(user);
+    if (document.getElementById(`vid-${user.id}`)){
+        document.getElementById(`vid-${user.id}`).srcObject = stream;
+    }
+    else{
       var vidDiv = document.createElement('div');
       vidDiv.setAttribute('class', 'col-5 vid-element')
       vidElement = document.createElement("VIDEO");
@@ -586,7 +648,10 @@
       vidDiv.appendChild(vidElement);
       videoDialog.appendChild(vidDiv);
       console.log(stream);
+    }
+    if (user.id == myDetails.id){
       document.getElementById(`vid-${user.id}`).volume =0;
+    }
   }
     
   function sendMessage(){
@@ -607,6 +672,30 @@
           }, "all", myDetails)
       }
   }
+    
+  
+  function request(val, action){
+    if (val == -1){
+      for (let g in waitList){
+        alert(g);
+          fetch("{% url 'app:roomResponse' %}?roomid="+'{{room.room_id}}&userid='+waitList[g]+"&resp="+action).then(res=>res.json())
+          .then(data=>{
+
+          });
+      }
+      waitList = [];
+      document.getElementById("waitlist").innerHTML = "";
+    }
+    else{
+      fetch("{% url 'app:roomResponse' %}?roomid="+'{{room.room_id}}&userid='+val+"&resp="+action).then(res=>res.json())
+          .then(data=>{
+
+          });
+      document.getElementById(`w-${val}`).remove();
+    }
+    
+  }
+
     </script>
   </body>
 </html>

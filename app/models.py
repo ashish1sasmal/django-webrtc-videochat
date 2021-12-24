@@ -10,7 +10,7 @@ class ChatRoom(models.Model):
     members = models.ManyToManyField(User, related_name="room_members", blank=True)
     admin = models.ForeignKey(User, related_name="chatroom_admin", on_delete=models.CASCADE)
     online = models.ManyToManyField(User, related_name="room_online", blank=True)
-
+    last_active = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.room_id
 

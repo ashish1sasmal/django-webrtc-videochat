@@ -137,7 +137,19 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
                     "event" : "chat_message"
                 }
             )
-    
+
+        elif msgType == "join_request":
+            if self.room.admin.user_profile.unique_id == self.user.id:
+                from_ = text_data_json.get("user")
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type' : 'join_request',
+                        'to' : self.user,
+                        'from' : from_
+                    }
+                )
+
     async def chatroom_message(self, event):
         message = event['message']
         await self.send(text_data=json.dumps({
@@ -184,6 +196,16 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
             'to': event["to"],
             'from': event['from']
         }))
+
+    
+    async def join_request(self, event):
+        if event["to"]== self.user["id"]:
+            from_ = event.get("user")
+            await self.send(text_data=json.dumps({
+                'type' : 'join_request',
+                'to': self.user,
+                'from': from_
+            }))
 
     @database_sync_to_async
     def save_message(self, message):

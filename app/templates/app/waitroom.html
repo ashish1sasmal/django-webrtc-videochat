@@ -1,0 +1,58 @@
+{% extends "app/base.html" %}
+{% block content %}
+
+<title>Waiting Lobby</title>
+    <style>
+        .loader {
+          border: 16px solid #f3f3f3;
+          border-radius: 50%;
+          border-top: 16px solid #82807a;
+          border-bottom: 16px solid #82807a;
+          width: 120px;
+          height: 120px;
+          -webkit-animation: spin 2s linear infinite;
+          animation: spin 2s linear infinite;
+        }
+        
+        @-webkit-keyframes spin {
+          0% { -webkit-transform: rotate(0deg); }
+          100% { -webkit-transform: rotate(360deg); }
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+    </style>
+
+
+    <div class="container" align="center" style="margin-top: 10%;">
+        <div class="loader"></div>
+        <br>
+        <h4><b>Wait while someone allow you...</b></h4>
+    </div>
+
+    <script>
+        function connectWebSocket(){
+            var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+            chatSocket = new WebSocket(ws_scheme+'://' +window.location.host +'/ws/user/{{request.user.user_profile.unique_id}}/');
+            console.log("Websocket connected");
+
+            chatSocket.onmessage = async(e) =>{
+                const data = JSON.parse(e.data);
+                console.log(data);
+                if (data.type == "room_request"){
+                    if (data.response == "accept"){
+                        alert("Accepted")
+                        window.location = "{% url 'app:enterRoom' room.room_id %}"
+                    }
+                    else{
+                        alert("Request denied.");
+                        window.location = "/"
+                    }
+                }
+            }
+        }
+        connectWebSocket()
+    </script>
+{% endblock content %}

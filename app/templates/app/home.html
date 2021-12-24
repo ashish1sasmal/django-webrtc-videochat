@@ -27,7 +27,7 @@
               <tr>
                 <th scope="row">{{forloop.counter}}</th>
                 <td><a href="{% url 'app:enterRoom' room.room_id %}" style="text-decoration: none;">{{room.room_id}}</a></td>
-                <td>@mdo</td>
+                <td>{{room.last_active | date:'d-m-Y H:i'}}</td>
               </tr>
           {% endfor %}
         </tbody>
