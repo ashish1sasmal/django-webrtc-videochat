@@ -5,11 +5,17 @@
     .main-div{
         position: absolute;
         left:   15%;
+        
+    }
+
+    body{
+        background-color: #4d4f4e;
     }
 
     .sub-divs{
         border-radius: 10px;
         box-shadow: 0 8px 25px 0 rgba(74, 174, 217, 0.4), 0 6px 40px 0 rgba(74, 174, 217, 0.19);
+        background-color: #dedede;
     }
 
     .profile-img{
@@ -30,7 +36,11 @@
                 <p style="margin-bottom: 0px;color: rgb(95, 92, 92);">{{profile.user.email}}</p>
                 <p style="color: rgb(95, 92, 92);">Last Seen : {{profile.last_login}}</p>
 
-                <button class="btn btn-sm btn-primary">Follow</button>
+                {% if profile.user in user.user_profile.follow.all %}
+                {% else %}
+                {% ifnotequal profile.user user %}
+                <button class="btn btn-sm btn-primary" id="follow-btn">Follow</button>
+                {% endifnotequal %}{% endif %}
                 <button class="btn btn-sm btn-outline-primary">Message</button>
                 <hr>
             </center>
@@ -59,30 +69,35 @@
         <div class="col-md-6 col-sm-12 ms-4 sub-divs p-4">
             <h5>Profile</h5>
             <hr>
-            <div class="row">
-                <div class="col-md-3 col-sm-12 me-2 mb-3"><p>Full Name : </p></div>
-                <div class="col-md-8 col-sm-12"> <input type="text" class="form-control profile-input" name="" id="" value="{{profile.user.first_name}}"></div>
-            </div>
-            <div class="row">
-                <div class="col-md-3 col-sm-12 me-2 mb-3"><p>Email : </p></div>
-                <div class="col-md-8 col-sm-12"> <input type="text" class="form-control profile-input" name="" id="" value="{{profile.user.email}}"></div>
-            </div>
-            <div class="row">
-                <div class="col-md-3 col-sm-12 me-2 mb-3"><p>Mobile : </p></div>
-                <div class="col-md-8 col-sm-12"> <input type="text" class="form-control profile-input" name="" id=""></div>
-            </div>
-            <div class="row">
-                <div class="col-md-3 col-sm-12 me-2 mb-3"><p>Address : </p></div>
-                <div class="col-md-8 col-sm-12"> <input type="text" class="form-control profile-input" name="" id=""></div>
-            </div>
-            <div class="row">
-                <div class="col-md-3 col-sm-12 me-2 mb-3"><p>Bio : </p></div>
-                <div class="col-md-8 col-sm-12"> <textarea name="" id="" cols="30" rows="3" class="form-control profile-input"></textarea></div>
-            </div>
-            <div class="row mt-4">
-                <div class="col-md-3 col-sm-12 me-2 mb-3"></div>
-                <div class="col-md-8 col-sm-12"> <button class="btn btn-success" id="save-btn">Save</button></textarea></div>
-            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-3 col-sm-12 me-2 mb-3"><p>Full Name : </p></div>
+                    <div class="col-md-8 col-sm-12"> <input type="text" class="form-control profile-input" name="user_name" id="" value="{{profile.user.first_name}}"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 col-sm-12 me-2 mb-3"><p>Email : </p></div>
+                    <div class="col-md-8 col-sm-12"> <input type="text" class="form-control profile-input" name="user_email" id="" value="{{profile.user.email}}"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 col-sm-12 me-2 mb-3"><p>Mobile : </p></div>
+                    <div class="col-md-8 col-sm-12"> <input type="text" class="form-control profile-input" name="user_mobile" id="" value="{{profile.mobile}}"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 col-sm-12 me-2 mb-3"><p>Address : </p></div>
+                    <div class="col-md-8 col-sm-12"> <input type="text" class="form-control profile-input" name="user_address" id="" value="{{profile.address}}"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 col-sm-12 me-2 mb-3"><p>Bio : </p></div>
+                    <div class="col-md-8 col-sm-12"> <textarea name="user_bio" id="" cols="30" rows="3" class="form-control profile-input">{{profile.bio}}</textarea></div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-md-3 col-sm-12 me-2 mb-3"></div>
+                    <div class="col-md-8 col-sm-12"> <button type="submit" class="btn btn-success" id="save-btn">Save</button></textarea></div>
+                </div>
+
+            </form>
+            
         </div>
     </div>
 </div>
@@ -94,6 +109,8 @@
         inputs[i].disabled = true ;
     }
     document.getElementById("save-btn").style.display = "none";
+    document.getElementById("follow-btn").style.display = "block";
+
     {% endif %}
 </script>
 

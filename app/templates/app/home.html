@@ -6,14 +6,30 @@
       background-image: url("https://images.unsplash.com/photo-1585974738771-84483dd9f89f");
       background-size: 100% 150%;
   }
+
+  .green-dot {
+    height: 10px;
+    width: 10px;
+    background-color: greenyellow;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .red-dot {
+    height: 10px;
+    width: 10px;
+    background-color: red;
+    border-radius: 50%;
+    display: inline-block;
+  }
 </style>
 
 <br><br><br>
 
 <div class="container">
-  <div class="row">
-    <div class="col-sm-10 col-md-5 col-lg-5 p-5 mb-4 rounded-3 me-3" style="background-color: #232b2b;color: white;">
-      <caption>Recents</caption>
+  <div class="row" style="min-height: 300px;max-height: 300px;">
+    <div class="col-sm-10 col-md-5 col-lg-5 p-3 mb-4 rounded-3 me-3 table-responsive" style="background-color: #232b2b;max-height: 300px;color: white;">
+      <caption>Recents Calls</caption>
       <table class="table" style="color: white;">
         <thead>
           <tr>
@@ -34,34 +50,26 @@
       </table>
     </div>
   
-    <div class="col-sm-10 col-md-5 col-lg-5 p-5 mb-4 bg-light rounded-3">
-      <table class="table table-hover">
+    <div class="col-sm-10 col-md-5 col-lg-5 p-3 mb-4 bg-light rounded-3 table-responsive" style="max-height: 300px;">
+      <caption>My Friends</caption>
+      <table class="table table-hover">   
         <thead>
           <tr>
             <th scope="col">#</th>
-            <th scope="col">First</th>
-            <th scope="col">Last</th>
+            <th scope="col">Name</th>
+            <th scope="col">Status</th>
             <th scope="col">Handle</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <th scope="row">1</th>
-            <td>Mark</td>
-            <td>Otto</td>
-            <td>@mdo</td>
-          </tr>
-          <tr>
-            <th scope="row">2</th>
-            <td>Jacob</td>
-            <td>Thornton</td>
-            <td>@fat</td>
-          </tr>
-          <tr>
-            <th scope="row">3</th>
-            <td colspan="2">Larry the Bird</td>
-            <td>@twitter</td>
-          </tr>
+          {% for user in request.user.user_profile.follow.all %}
+              <tr>
+                <th scope="row">{{forloop.counter}}</th>
+                <td><a href="{% url 'user:profile' user.user_profile.unique_id %}" style="text-decoration: none;">{% if user.first_name %}{{user.first_name}}{% else %}{{user.username}}{% endif %}</a></td>
+                <td>{% if user.user_profile.active %}<p style="color: #21a617;"><span class="green-dot"></span> Online</p>{% else %}<p style="color: crimson;"><span class="red-dot"></span> Offline</p>{% endif   %}</td>
+                <td>@mdo</td>
+              </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>

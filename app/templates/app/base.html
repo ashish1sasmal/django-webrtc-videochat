@@ -90,6 +90,38 @@
               console.log(data);
           });
       }
+
+      {% if user.is_authenticated %}
+      let myDetails = {"id": '{{request.user.user_profile.unique_id}}', "name": '{{request.user.username}}'};
+      function connectWebSocket(){
+            var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+            chatSocket = new WebSocket(ws_scheme+'://' +window.location.host +'/ws/user/{{request.user.user_profile.unique_id}}/');
+            console.log("Websocket connected");
+
+            chatSocket.onmessage = async(e) =>{
+                const data = JSON.parse(e.data);
+                console.log(data);
+                if (data.type == "room_request"){
+                    if (data.response == "accept"){
+                        alert("Accepted")
+                        window.location = "/chat/"+data.room_id
+                    }
+                    else{
+                        alert("Request denied.");
+                        window.location = "/"
+                    }
+                }
+            }
+
+            chatSocket.onopen = event =>{
+                chatSocket.send(JSON.stringify({
+                      "type": "login",
+                      "from": myDetails
+                  }));
+            }
+        }
+        connectWebSocket()
+      {% endif %}
     </script>
   </body>
 </html>

@@ -63,7 +63,8 @@ def roomResponse(request):
         if request.user == room.admin:
             msg = {
                 "response": resp,
-                "type": "room_request"
+                "type": "room_request",
+                "room_id": room.room_id
             }
             if resp == "accept":
                 user = Profile.objects.get(unique_id=userid)

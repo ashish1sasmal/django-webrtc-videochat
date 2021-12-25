@@ -17,6 +17,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         await self.authenticate_user()
     
     async def disconnect(self, close_code):
+        await self.change_status("logout")
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
@@ -31,12 +32,24 @@ class UserConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        pass
+        msg_type = text_data_json.get("type")
+        if msg_type == "login":
+            await self.change_status("login")
 
     async def room_request(self, event):
         await self.send(text_data=json.dumps({
             'type' : "room_request",
-            'response' : event["response"]
+            'response' : event["response"],
+            'room_id': event["room_id"]
         }))
 
-    
+    @database_sync_to_async
+    def change_status(self, action):
+        active = False
+        if action == "login":
+            active = True
+        profile = self.scope["user"].user_profile
+        profile.active = active
+        profile.save()
+
+        

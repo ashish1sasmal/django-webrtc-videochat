@@ -62,7 +62,20 @@ def user_login(request):
 
 def profile(request, id):
     if request.method == "POST":
-        pass
+        data = request.POST
+        name = data.get("user_name")
+        email = data.get("email")
+        mobile = data.get("user_mobile")
+        address = data.get("user_address")
+        bio = data.get("user_bio")
+        user = request.user
+        user.first_name = name
+        user.save()
+        profile = user.user_profile
+        profile.mobile = mobile
+        profile.bio = bio
+        profile.address = address
+        profile.save()
     try:
         profile = Profile.objects.get(unique_id=id)
     except Exception as err:

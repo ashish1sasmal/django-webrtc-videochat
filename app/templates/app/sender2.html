@@ -371,7 +371,6 @@
                     if (elem){
                       elem.parentNode.removeChild(elem);
                     }
-                   
                 }
                 else if (action == "add"){
                     onlineList.innerHTML += 
@@ -383,7 +382,7 @@
                         </div>
                         <a type="button" class="pin-icon"><i class="fas fa-thumbtack"></i></a>
                     </div>
-                    `
+                    `;
                 }
             }
             if (type == "joiner" && user.id != myDetails.id){
@@ -402,11 +401,11 @@
                 await handleIncomingcall(user, data);
             }
             else if (type == "answer"){
-                console.log("Call answered")
+                console.log("Call answered");
                 peerConnection[user.id].pc.setRemoteDescription( data.answer );
             }
             else if (type == "candidate"){
-                console.log("ICE candidate received")
+                console.log("ICE candidate received");
                 handleIncomingICEcandidate(user, data);
             }
             else if(type == "join_request"){

@@ -12,6 +12,10 @@ class Profile(models.Model):
     last_login = models.DateTimeField(blank=True, null=True)
     unique_id = models.CharField(max_length=8, default=str(uuid.uuid4())[:8])
     email_confirm = models.BooleanField(default=False)
-
+    mobile = models.CharField(max_length=10)
+    bio = models.CharField(max_length=50)
+    address = models.CharField(max_length=50)
+    follow = models.ManyToManyField(User, related_name="user_follow")
+    active = models.BooleanField(default=False)
     def __str__(self):
         return self.user.username
