@@ -102,16 +102,4 @@
     </div>
 </div>
 
-<script>
-    {% if user.user_profile.unique_id != profile.unique_id %}
-    let inputs = document.getElementsByClassName("profile-input");
-    for (i=0; i<inputs.length; i++){
-        inputs[i].disabled = true ;
-    }
-    document.getElementById("save-btn").style.display = "none";
-    document.getElementById("follow-btn").style.display = "block";
-
-    {% endif %}
-</script>
-
 {% endblock content %}

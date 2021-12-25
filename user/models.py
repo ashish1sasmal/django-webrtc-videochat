@@ -18,4 +18,4 @@ class Profile(models.Model):
     follow = models.ManyToManyField(User, related_name="user_follow", blank=True, null=True)
     active = models.BooleanField(default=False)
     def __str__(self):
-        return self.user.username
+        return self.user.first_name if self.user.first_name else self.user.username

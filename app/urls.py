@@ -10,5 +10,6 @@ urlpatterns = [
     path('manage/online/', views.manageOnlineUsers, name="manageOnlineUsers"),
     path('location/update/', views.locationSharing, name="locationSharing"),
     path('lobby/<str:room_id>', views.waitRoom, name="waitRoom"),
-    path('chat/response/', views.roomResponse, name='roomResponse',)
+    path('chat/response/', views.roomResponse, name='roomResponse',),
+    path("sendInvite/", views.sendInvite, name="sendInvite")
 ]

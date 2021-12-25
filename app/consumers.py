@@ -1,5 +1,7 @@
 import json
 from typing import Text
+
+from django.contrib.auth import authenticate
 from app.models import ChatRoom, Message
 from channels.generic.websocket import AsyncWebsocketConsumer
 from .service import add_remove_online_user, updateLocationList, add_remove_room_user
@@ -41,8 +43,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
                 'message' : "remove"
             }
         )
-        self.room.online.remove(self.scope["user"])
-        self.room.save()
+        await self.authenticate_user(add=False)
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
@@ -54,12 +55,15 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         return user.user_profile
 
     @sync_to_async
-    def authenticate_user(self):
+    def authenticate_user(self, add=True):
         if self.scope ['user'].is_authenticated:
             self.room = ChatRoom.objects.get(room_id=self.room_group_name)
             user = self.scope["user"]
             self.user = {"id": user.user_profile.unique_id, "name": user.username}
-            self.room.online.add(user)
+            if add:
+                self.room.online.add(user)
+            else:
+                self.room.online.remove(user)
             self.room.save()
 
     async def receive(self, text_data):

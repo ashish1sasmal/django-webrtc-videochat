@@ -97,9 +97,6 @@
       
     </head>
     <body>
-      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#waitModal">
-        Launch demo modal
-      </button>
     <div>
       <div class="modal fade" id="waitModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog  modal-dialog-scrollable">
@@ -128,6 +125,33 @@
           </div>
         </div>
       </div>
+
+      <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog  modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Meeting Info</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-4"><b>Meeting Code :</b></div>
+                <div class="col-8">{{room.room_id}}</div>
+              </div>
+              <div class="row">
+                <div class="col-4"><b>Meeting URL :</b></div>
+                <div class="col-8"><a href="{% url 'app:enterRoom' room.room_id %}">{% url 'app:enterRoom' room.room_id %}</a></div>
+              </div>
+              <div class="row mt-3">
+                <p>Send invite link <i class="far fa-envelope"></i></p>
+                <div class="col-7"><input type="email" name="" placeholder="Enter email" id="inviteEmail" class="form-control"></div>
+                <div class="col-4 ms-2"><button class="btn btn-success" onclick="sendInvite();">Invite</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
         <div class="row">
             <div class="col">
                 <div class="row m-2" id="video-div">
@@ -186,7 +210,7 @@
         </div>
         
         <header class="d-flex fixed-bottom flex-wrap align-items-center justify-content-center justify-content-md-between py-1 border-bottom" style="background-color: rgb(31, 30, 30);">
-            <a type="button" onclick="navigator.clipboard.writeText(window.location.protocol+'//'+window.location.host+'{% url 'app:enterRoom' room.room_id %}');" class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-decoration-none ms-4">
+            <a type="button" onclick="navigator.clipboard.writeText(window.location.protocol+'//'+window.location.host+"{% url 'app:enterRoom' room.room_id %}");" class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-decoration-none ms-4">
               <h6 style="color: white;"><span id="date-time"></span> | {{room.room_id}}</h6>
               <h4><i class="far fa-clipboard ms-3" type="button" style="color:white;"></i></h4>
             </a>
@@ -200,9 +224,9 @@
               <li class="chat-icon"><a href="{% url 'app:home' %}" class="nav-link px-2 link-dark" id=""><i class="fas fa-sign-out-alt " style="color: red;"></i></a></li>
             </ul>
       
-            <div class="col-md-3 text-end">
-              <button type="button" class="btn btn-outline-primary me-2">Login</button>
-              <button type="button" class="btn btn-primary">Sign-up</button>
+            <div class="col-md-3 text-end me-3">
+              <button type="button" class="btn btn-outline-info me-2" data-bs-toggle="modal" data-bs-target="#waitModal"><i class="fas fa-chair"></i></button>
+              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#infoModal"><i class="fas fa-info"></i></button>
             </div>
         </header>
     </div>
@@ -693,6 +717,24 @@
       document.getElementById(`w-${val}`).remove();
     }
     
+  }
+
+  function sendInvite(){
+      email = document.getElementById("inviteEmail").value;
+      if (email == ""){
+          alert("Invalid email");
+      }
+      else{
+          fetch("{% url 'app:sendInvite' %}?email="+email+"&room_id={{room.room_id}}").then(res=>res.json())
+          .then(data=>{
+              console.log(data);
+              if (data.success)
+                alert(`Successfully send mail to ${email}`)
+              else
+                alert(`Failed to send mail ${email}`)
+          });
+    }
+    document.getElementById("inviteEmail").value = "";
   }
 
     </script>

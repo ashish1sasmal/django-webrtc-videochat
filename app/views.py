@@ -17,17 +17,33 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.http import JsonResponse
 from user.models import Profile
+from .email import emailSend
 
 channel_layer = get_channel_layer()
 
 def home(request):
-    context = {}
-    if request.user.is_authenticated:
-        rooms = ChatRoom.objects.filter(members__in=[request.user]).order_by("-last_active")[:3]
-        context={
-            "rooms": rooms
-        }
-    return render(request, "app/home.html", context)
+    if request.method == "GET":
+        context = {}
+        if request.user.is_authenticated:
+            rooms = ChatRoom.objects.filter(members__in=[request.user]).order_by("-last_active")
+            context={
+                "rooms": rooms
+            }
+        return render(request, "app/home.html", context)
+    else:
+        room_id = request.POST.get("room_id")
+        try:
+            room = ChatRoom.objects.get(room_id=room_id)
+            return redirect("app:enterRoom", room_id=room_id)
+        except Exception as err:
+            print(str(err)+ " home "+room_id)
+            context = {}
+            if request.user.is_authenticated:
+                rooms = ChatRoom.objects.filter(members__in=[request.user]).order_by("-last_active")[:3]
+                context={
+                    "rooms": rooms
+                }
+            return render(request, "app/home.html", context)
 
 @login_required
 def startRoom(request):
@@ -114,3 +130,26 @@ def manageOnlineUsers(request):
             return Response(FAILED, "Invalid action provided", status=400)
         
         return Response(SUCCESS, action+" action performed for "+username, data=online_users)
+
+
+def sendInvite(request):
+    email = request.GET.get("email")
+    room_id = request.GET.get("room_id")
+    try:
+        print(f"room_id : {room_id}")
+        room = ChatRoom.objects.get(room_id=room_id)
+        msg = f"""
+        <div>
+            <h4><b>Host : {room.admin}</b></h4>
+            <h4><b>Join using <a href="http://localhost:8000/chat/{room_id}">Link</a></b></h4>
+        </div>
+        """
+        send = emailSend("Video Call Invite", msg, [email])
+        if send:
+            return JsonResponse({"success": True})
+        else:
+            return JsonResponse({"success": False})
+    except ChatRoom.DoesNotExist as err:
+        print(str(err))
+        return JsonResponse({"success": False})
+    
