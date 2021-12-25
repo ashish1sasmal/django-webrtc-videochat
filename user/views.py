@@ -8,6 +8,8 @@ from .models import Profile
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate
 from datetime import datetime
+from django.db.models import Count, Q
+from django.http import JsonResponse
 # Create your views here.
 
 @login_required
@@ -81,3 +83,25 @@ def profile(request, id):
     except Exception as err:
         return render(request, "app/home.html")
     return render(request, "user/profile.html", context={"profile": profile})
+
+
+@login_required
+def autocomplete(request):
+    if request.is_ajax():
+        query = request.GET.get("term", "")
+        profiles = User.objects.filter(Q(username__icontains=query) | Q(first_name__icontains=query))
+        results = []
+        # ext = ChatGroup.objects.annotate(c=Count('members')).filter(c=2,members__in=[request.user])
+        for profile in profiles:
+            results.append({
+                "label":profile.first_name if profile.first_name else profile.username,
+                "value":profile.user_profile.unique_id
+                })
+        if results==[]:
+            results.append({"label":"No Match Found","value":""})
+        return JsonResponse(results,safe=False)
+
+    # elif request.method=="GET":
+    #     code = request.GET.get("mysearchid")
+    #     group = ChatGroup.objects.get(code = code)
+    #     return redirect("chat:room" ,room_code=code)
