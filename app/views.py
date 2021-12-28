@@ -19,9 +19,6 @@ from django.http import JsonResponse
 from user.models import Profile
 from .email import emailSend
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 channel_layer = get_channel_layer()
 
@@ -145,7 +142,7 @@ def sendInvite(request):
         msg = f"""
         <div>
             <h4><b>Host : {room.admin}</b></h4>
-            <h4><b>Join using <a href="{os.getenv("HOST")}/chat/{room_id}">Link</a></b></h4>
+            <h4><b>Join using <a href="{os.environ.get('HOST')}/chat/{room_id}">Link</a></b></h4>
         </div>
         """
         send = emailSend("Video Call Invite", msg, [email])
