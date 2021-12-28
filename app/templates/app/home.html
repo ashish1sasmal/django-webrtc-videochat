@@ -34,6 +34,34 @@
 </style>
 
 <br><br><br>
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 5">
+	<div id="primary_toast" class="toast hide text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+	<div class="toast-body" id="primary_toast_msg">
+	</div>
+	</div>
+	</div>
+
+	<div class="position-fixed top-0 end-0 p-3" style="z-index: 5">
+	<div id="success_toast" class="toast hide text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+	<div class="toast-body" id="success_toast_msg">
+	</div>
+	</div>
+	</div>
+
+	<div class="position-fixed top-0 end-0 p-3" style="z-index: 5">
+	<div id="danger_toast" class="toast hide text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+	<div class="toast-body" id="danger_toast_msg">
+	</div>
+	</div>
+	</div>
+
+	<div class="position-fixed top-0 end-0 p-3" style="z-index: 5">
+	<div id="warning_toast" class="toast hide text-white bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true">
+	<div class="toast-body" id="warning_toast_msg">
+	</div>
+	</div>
+	</div>
+
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -58,6 +86,7 @@
   </div>
 </div>
 
+{% if user.is_authenticated %}
 <div class="container">
   <div class="row" style="min-height: 300px;max-height: 300px;">
     <div class="col-sm-10 col-md-5 col-lg-5 p-3 mb-4 rounded-3 me-3 table-responsive" style="background-color: #232b2b;max-height: 300px;color: white;float: none; margin: 0 auto;">
@@ -72,10 +101,11 @@
         </thead>
         <tbody>
           {% for room in rooms %}
-              <tr>
-                <th scope="row">{{forloop.counter}}</th>
+              <tr id="r-{{room.room_id}}">
+                <th scope="row">#</th>
                 <td><a href="{% url 'app:enterRoom' room.room_id %}" style="text-decoration: none;">{{room.room_id}}</a></td>
                 <td>{{room.last_active | date:'d-m-Y H:i'}}</td>
+                <td><a type="button" onclick="deleteRoom('{{room.room_id}}')"><i class="fas fa-trash" style="color: red;"></i></a></td>
               </tr>
           {% endfor %}
         </tbody>
@@ -121,6 +151,18 @@
   </div>
 
 </div>
+{% else %}
+<div class="container">
+  <div class="p-5 mb-4 bg-light rounded-3">
+    <div class="container-fluid py-5" style="background-color: #e8e8e8;">
+      <h1 class="display-5 fw-bold">Hey! Friend :) {{user.username}}</h1>
+      <p class="col-md-8 fs-4">“Live your life, listen to your music way too loud, be crazy and as different as you want to be and always remember you're not alone.”</p>
+      <p class="fs-12"><i>- Andy Biersack</i></p>
+      <a type="button" class="btn btn-primary" href="{% url 'app:startRoom' %}" type="button">Let's Start</a>
+    </div>
+  </div>
+</div>
+{% endif %}
 
 <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -142,6 +184,22 @@
     function searchUser(){
         id = document.getElementById("mysearchid").value;
         window.location = "/auth/profile/"+id;
+    }
+
+    function deleteRoom(room_id){
+      fetch("/delete/room/"+room_id).then(res => res.json())
+      .then(data => {
+          if (data.result){
+              alert("Room deleted successfully!");
+              var elem = document.getElementById('r-'+room_id);
+              if (elem) {
+                  elem.parentNode.removeChild(elem);
+              }
+          }
+          else{
+              alert("Failed to delete room");
+          }
+      });
     }
 </script>
 

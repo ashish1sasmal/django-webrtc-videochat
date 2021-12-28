@@ -18,6 +18,10 @@ from asgiref.sync import async_to_sync
 from django.http import JsonResponse
 from user.models import Profile
 from .email import emailSend
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 channel_layer = get_channel_layer()
 
@@ -141,7 +145,7 @@ def sendInvite(request):
         msg = f"""
         <div>
             <h4><b>Host : {room.admin}</b></h4>
-            <h4><b>Join using <a href="http://localhost:8000/chat/{room_id}">Link</a></b></h4>
+            <h4><b>Join using <a href="{os.getenv("HOST")}/chat/{room_id}">Link</a></b></h4>
         </div>
         """
         send = emailSend("Video Call Invite", msg, [email])
@@ -153,3 +157,12 @@ def sendInvite(request):
         print(str(err))
         return JsonResponse({"success": False})
     
+@login_required
+def deleteRoom(request, room_id):
+    try:
+        room = ChatRoom.objects.get(room_id=room_id)
+        room.delete()
+        return JsonResponse({"result": True})
+    except Exception as err:
+        print(str(err))
+        return JsonResponse({"result": False})

@@ -113,7 +113,6 @@
         if (localVideoStream){
             peerConn[user.id].addStream(localVideoStream);
         }
-
         let answer = await peerConn[user.id].createAnswer();
         await peerConn[user.id].setLocalDescription(answer);
         await sendSocket({
@@ -140,8 +139,6 @@
         }
         
         peerConn[user.id].onicecandidate = async(event) => handleICEcandidate(user, event);
-
-        
         peerConn[user.id].onaddstream = event => handleAddStream(user, event);
     }
 
@@ -152,10 +149,10 @@
           type: "candidate",
           candidate: event.candidate
       }, user, myDetails)
-  }
+    }
 
-  function handleAddStream(user, event){
-    onVideoAdd(user, event.stream);
+    function handleAddStream(user, event){
+            onVideoAdd(user, event.stream);
     }
 
 

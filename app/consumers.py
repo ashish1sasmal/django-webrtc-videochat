@@ -31,8 +31,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
             }
         )
     
-    async def disconnect(self, close_code):
-        
+    async def disconnect(self, close_code):      
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -129,8 +128,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
                 }
             )
         elif msgType == "chat_message":
-            if self.is_auth:
-                await self.save_message(text_data_json["message"])
+            await self.save_message(text_data_json["message"])
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
