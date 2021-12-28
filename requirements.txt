@@ -8,10 +8,12 @@ constantly==15.1.0
 cryptography==35.0.0
 daphne==3.0.2
 Django==3.2.5
+django-heroku==0.3.1
 gunicorn==20.1.0
 hyperlink==21.0.0
 idna==3.3
 incremental==21.3.0
+psycopg2-binary==2.9.2
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.21
@@ -24,4 +26,5 @@ sqlparse==0.4.2
 Twisted==21.7.0
 txaio==21.2.1
 typing-extensions==3.10.0.2
+whitenoise==5.2.0
 zope.interface==5.4.0
