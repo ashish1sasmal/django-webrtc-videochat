@@ -14,3 +14,24 @@ from django.core.asgi import get_asgi_application
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'videochat.settings')
 
 application = get_asgi_application()
+
+
+from channels.auth import AuthMiddlewareStack
+from channels.routing import ProtocolTypeRouter, URLRouter
+
+import app.routing
+import user.routing
+
+application = ProtocolTypeRouter({
+    # Django's ASGI application to handle traditional HTTP requests
+    "http": django_asgi_app,
+
+    # WebSocket chat handler
+    'websocket': AuthMiddlewareStack(
+        URLRouter(
+            app.routing.websocket_urlpatterns+ user.routing.websocket_urlpatterns
+        )
+
+    ),
+
+})
