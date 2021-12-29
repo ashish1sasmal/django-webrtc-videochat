@@ -103,7 +103,8 @@ def enterRoom(request, room_id):
         room.last_active = datetime.now()
         room.save()
         context = {
-            "room": room
+            "room": room,
+            "messages": room.message_room.all()
         }
         return render(request, "app/sender2.html", context=context)
     except ChatRoom.DoesNotExist as err:

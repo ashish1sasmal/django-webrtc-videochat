@@ -53,15 +53,20 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         user = self.scope['user']
         return user.user_profile
 
-    @sync_to_async
+    @database_sync_to_async
     def authenticate_user(self, add=True):
         if self.scope ['user'].is_authenticated:
             self.room = ChatRoom.objects.get(room_id=self.room_group_name)
             user = self.scope["user"]
+            profile = user.user_profile
             self.user = {"id": user.user_profile.unique_id, "name": user.username}
             if add:
+                profile.active = True
+                profile.save()
                 self.room.online.add(user)
             else:
+                profile.active = False
+                profile.save()
                 self.room.online.remove(user)
             self.room.save()
 
