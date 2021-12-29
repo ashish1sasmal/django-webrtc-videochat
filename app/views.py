@@ -1,11 +1,12 @@
 from django.contrib.auth import login
+from django.http.response import HttpResponse
 from django.shortcuts import redirect, render
 
 # Create your views here.
 import uuid
 from django.core.cache import cache
 
-from app.models import ChatRoom
+from app.models import ChatRoom, Message
 from .utils import Response
 from .constants import *
 from .service import add_remove_online_user, updateLocationList
@@ -19,6 +20,9 @@ from django.http import JsonResponse
 from user.models import Profile
 from .email import emailSend
 import os
+from django.contrib.auth import get_user_model
+User = get_user_model()
+from django.db.models import Count
 
 channel_layer = get_channel_layer()
 
@@ -164,3 +168,26 @@ def deleteRoom(request, room_id):
     except Exception as err:
         print(str(err))
         return JsonResponse({"result": False})
+
+@login_required
+def chatroom(request):
+    try:
+        user_id = request.GET.get("user")
+        print(user_id)
+        user = User.objects.get(user_profile__unique_id=user_id)
+        room = None
+        try:
+            print(request.user, user)
+            room = ChatRoom.objects.annotate(c=Count("members")).filter(c=2,members__in = (request.user,)).get(members__in = (user,))
+        except ChatRoom.DoesNotExist as err:
+            print(str(err))
+            room = ChatRoom(admin=request.user, room_id=str(uuid.uuid4())[:8])
+            room.save()
+            room.members.add(request.user)
+            room.members.add(user)
+            room.save()
+        messages = room.message_room.all()
+        return render(request, "app/chatroom.html", {"messages": messages, "room":room})
+    except Exception as err:
+        print(str(err))
+        return HttpResponse("<h4><b>Error occurred</b></h4>")

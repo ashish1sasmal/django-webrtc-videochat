@@ -37,9 +37,10 @@
                 <p style="color: rgb(95, 92, 92);">Last Seen : {{profile.last_login}}</p>
 
                 {% if profile.user in user.user_profile.follow.all %}
+                <button class="btn btn-sm btn-warning" id="follow-btn"  onclick="followUser('unfollow');">Unfriend</button>
                 {% else %}
                 {% ifnotequal profile.user user %}
-                <button class="btn btn-sm btn-primary" id="follow-btn">Follow</button>
+                <button class="btn btn-sm btn-primary" id="follow-btn" onclick="followUser('follow');">Add Friend</button>
                 {% endifnotequal %}{% endif %}
                 <button class="btn btn-sm btn-outline-primary">Message</button>
                 <hr>
@@ -101,5 +102,19 @@
         </div>
     </div>
 </div>
+
+<script>
+    function followUser(action){
+        fetch("{% url 'user:followUser' %}?id={{profile.unique_id}}"+"&action="+action).then(res => res.json())
+            .then(data => {
+                if (data.result){
+                    alert("Success");
+                }
+                else{
+                    alert("Please try again")
+                }
+            });
+    }
+</script>
 
 {% endblock content %}

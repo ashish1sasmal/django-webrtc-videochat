@@ -13,7 +13,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_code']
         self.room_group_name = self.room_name
-        
+        print(self.room_group_name)
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -56,6 +56,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def authenticate_user(self, add=True):
         if self.scope ['user'].is_authenticated:
+            print(self.room_group_name)
             self.room = ChatRoom.objects.get(room_id=self.room_group_name)
             user = self.scope["user"]
             profile = user.user_profile

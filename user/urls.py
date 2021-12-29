@@ -11,4 +11,5 @@ urlpatterns = [
     path("api/login/", views.user_login, name="login"),
     path('profile/<str:id>/', views.profile, name="profile"),
     path('search/', views.autocomplete, name='autocomplete'),
+    path('follow/', views.follow_user, name='followUser')
 ]

@@ -128,8 +128,8 @@
               <tr>
                 <th scope="row">{{forloop.counter}}</th>
                 <td><a href="{% url 'user:profile' user.user_profile.unique_id %}" style="text-decoration: none;">{% if user.first_name %}{{user.first_name}}{% else %}{{user.username}}{% endif %}</a></td>
-                <td>{% if user.user_profile.active %}<p style="color: #21a617;"><span class="green-dot"></span> Online</p>{% else %}<p style="color: crimson;"><span class="red-dot"></span> Offline</p>{% endif   %}</td>
-                <td>@mdo</td>
+                <td>{% if user.user_profile.active %}<p style="color: #21a617;"><span class="green-dot"></span> Online</p>{% else %}<p style="color: crimson;"><span class="red-dot"></span> Offline</p>{% endif %}</td>
+                <td><a href="{% url 'app:chatroom' %}?user={{user.user_profile.unique_id}}"><h4><i class="fas fa-comment-alt"></i></h4></a></td>
               </tr>
           {% endfor %}
         </tbody>

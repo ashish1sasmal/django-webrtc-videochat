@@ -28,12 +28,14 @@
         <div class="collapse navbar-collapse" id="navbarResponsive">
           <ul class="navbar-nav ms-auto">
             {% if user.is_authenticated %}
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'user:profile' user.user_profile.unique_id %}"><h5><b>Profile</b></h5></a>
-            </li>
-
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'user:logout' %}"><h5><b>Logout</b></h5></a>
+            <li class="nav-item dropdown me-2">
+              <a type="button" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"><h2><i class="fas fa-user-circle"></i></h2></a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li><a class="dropdown-item" href="{% url 'user:profile' user.user_profile.unique_id %}"><b>Profile</b></a></li>
+                <li><a class="dropdown-item" href="{% url 'user:logout' %}"><b>Logout</b></a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#">Something else here</a></li>
+              </ul>
             </li>
               <li class="nav-item">
                 <a class="nav-link" href="#"><h5><b>Start Call</b></h5></a>
@@ -118,7 +120,11 @@
                   }));
             }
         }
+      var loc = window.location.href.split("?")[0].split("/");
+      if (loc[loc.length-1] != "chatroom"){
         connectWebSocket()
+      }
+        
       {% endif %}
     </script>
   </body>

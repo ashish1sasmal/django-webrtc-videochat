@@ -105,3 +105,28 @@ def autocomplete(request):
     #     code = request.GET.get("mysearchid")
     #     group = ChatGroup.objects.get(code = code)
     #     return redirect("chat:room" ,room_code=code)
+
+
+@login_required
+def follow_user(request):
+    print(request.GET)
+    try:
+        id = request.GET.get("id")
+        action = request.GET.get("action")
+        user = User.objects.get(user_profile__unique_id=id)
+        print(user, id, action)
+        profile = request.user.user_profile
+        if action == "follow":
+            print("hello")
+            profile.follow.add(user)
+            profile.save()
+            return JsonResponse({"result":True})
+        elif action == "unfollow":
+            profile.follow.remove(user)
+            profile.save()
+            return JsonResponse({"result":True})
+        else:
+            return JsonResponse({"result":False})
+    except Exception as err:
+        print(str(err))
+        return JsonResponse({"result":False})
