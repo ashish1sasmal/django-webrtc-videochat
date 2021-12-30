@@ -11,6 +11,7 @@ from datetime import datetime
 from django.db.models import Count, Q
 from django.http import JsonResponse
 # Create your views here.
+import uuid
 
 @login_required
 def user_logout(request):
@@ -32,7 +33,7 @@ def register(request):
                 print(email,password1)
                 user.set_password(password1)
                 user.save()
-                profile = Profile(user=user)
+                profile = Profile(user=user, unique_id=str(uuid.uuid4())[:8])
                 profile.save()
                 login(request,user)
                 print(email + " registered")
@@ -63,6 +64,7 @@ def user_login(request):
             return Response("failed", "login failed", status=400)
 
 def profile(request, id):
+    print("id ", id)
     if request.method == "POST":
         data = request.POST
         name = data.get("user_name")
@@ -70,17 +72,22 @@ def profile(request, id):
         mobile = data.get("user_mobile")
         address = data.get("user_address")
         bio = data.get("user_bio")
+        print(name, email, mobile, address, bio)
         user = request.user
         user.first_name = name
         user.save()
-        profile = user.user_profile
+        profile = Profile.objects.get(user=request.user)
         profile.mobile = mobile
         profile.bio = bio
         profile.address = address
         profile.save()
+        print(profile.address)
+        print("hello")
+        return redirect("user:profile", id=profile.unique_id)
     try:
         profile = Profile.objects.get(unique_id=id)
     except Exception as err:
+        print(str(err))
         return render(request, "app/home.html")
     return render(request, "user/profile.html", context={"profile": profile})
 

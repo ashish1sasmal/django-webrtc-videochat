@@ -5,6 +5,7 @@
   body{
       background-image: url("https://images.unsplash.com/photo-1585974738771-84483dd9f89f");
       background-size: 100% 150%;
+      
   }
 
   .green-dot {
@@ -30,6 +31,10 @@
   
   .ui-helper-hidden-accessible{
     display: none;
+  }
+
+  #ui-id-1{
+      width: 200px !important;
   }
 </style>
 
@@ -152,11 +157,11 @@
 
 </div>
 {% else %}
-<div class="container">
-  <div class="p-5 mb-4 bg-light rounded-3">
+<div class="container col-8">
+  <div class="p-4 mb-4 bg-light rounded-3">
     <div class="container-fluid py-5" style="background-color: #e8e8e8;">
-      <h1 class="display-5 fw-bold">Hey! Friend :) {{user.username}}</h1>
-      <p class="col-md-8 fs-4">“Live your life, listen to your music way too loud, be crazy and as different as you want to be and always remember you're not alone.”</p>
+      <h3 class="fw-bold">Hey! Friend :) {{user.username}}</h3>
+      <p class="col-md-8 fs-3">“Live your life, listen to your music way too loud, be crazy and as different as you want to be and always remember you're not alone.”</p>
       <p class="fs-12"><i>- Andy Biersack</i></p>
       <a type="button" class="btn btn-primary" href="{% url 'app:startRoom' %}" type="button">Let's Start</a>
     </div>

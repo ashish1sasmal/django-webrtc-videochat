@@ -6,7 +6,7 @@
         background-color: #192e3b;
     }
     .chat-container {
-    height: 700px !important;
+    height: 730px !important;
 }
 
 .chat-container li.chat-left,
@@ -14,47 +14,25 @@
     display: flex;
     flex: 1;
     flex-direction: row;
-    margin-bottom: 40px;
+    margin-bottom: 10px;
     color: black;
     background-color: white;
     min-width: 600px !important;
 }
 
-.chat-container li img {
-    width: 48px;
-    height: 48px;
-    -webkit-border-radius: 30px;
-    -moz-border-radius: 30px;
-    border-radius: 30px;
-}
-
-.chat-container li .chat-avatar {
-    margin-right: 20px;
-}
 
 .chat-container li.chat-right {
     justify-content: flex-end;
 }
 
-.chat-container li.chat-right > .chat-avatar {
-    margin-left: 20px;
-    margin-right: 0;
-}
-
-.chat-container li .chat-name {
-    font-size: .75rem;
-    color: #999999;
-    text-align: center;
-}
 
 .chat-container li .chat-text {
-    padding: .4rem 1rem;
+    padding: .2rem 1rem;
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     border-radius: 4px;
     background: #dbd9d9;
     font-weight: 300;
-    line-height: 150%;
     position: relative;
 }
 
@@ -102,27 +80,19 @@
 </style>
 
 
-<div class="container mt-5 col-10" style="float: center;margin-left: 370px;">
+<div class="container mt-5 col-md-10 col-sm-12" style="float: center;margin-left: 370px;">
     <div class="chat-container col-8 bg-light p-3" style="border-radius: 20px;">
-        <h5 >User</h5>
-        <ul class="chat-box chatContainerScroll" style="overflow-y: scroll;height: 520px;padding: 10px;" id="chatlist">
+        <h5 >{{other}}</h5><hr>
+        <ul class="chat-box chatContainerScroll" style="overflow-y: scroll;height: 570px;padding: 10px;" id="chatlist">
             {% for msg in messages %}
             {% if msg.user == user %}
             <li class="chat-right">
                 <div class="chat-hour">08:56 <span class="fa fa-check-circle"></span></div>
-                <div class="chat-text">{{msg.text}}</div>
-                <div class="chat-avatar">
-                    <img src="https://www.bootdey.com/img/Content/avatar/avatar3.png" alt="Retail Admin">
-                    <div class="chat-name"><b>{{msg.user}}</b></div>
-                </div>
+                <div class="chat-text"><b>Me</b><br>{{msg.text}}</div>
             </li>
             {% else %}
             <li class="chat-left">
-                <div class="chat-avatar">
-                    <img src="https://www.bootdey.com/img/Content/avatar/avatar3.png" alt="Retail Admin">
-                    <div class="chat-name"><b>{{msg.user}}</b></div>
-                </div>
-                <div class="chat-text">{{msg.text}}</div>
+                <div class="chat-text"><b>{{msg.user}}</b><br>{{msg.text}}</div>
                 <div class="chat-hour">08:55 <span class="fa fa-check-circle"></span></div>
             </li>
             {% endif %}
@@ -131,10 +101,11 @@
             
             
         </ul>
-        <div class="form-group mt-3 mb-0 p-3">
+        <div class="form-group mb-0 p-3" style="margin-top: -50px;">
+            <hr>
             <div class="row">
                 <div class="col-9">
-                    <textarea class="form-control" rows="3" placeholder="Type your message here..." id="inputMsg"></textarea>
+                    <textarea class="form-control" rows="2" placeholder="Type your message here..." id="inputMsg"></textarea>
                 </div>
                 <div class="col-3">
                     <button class="btn btn-primary" onclick="sendMessage();">Send</button>
@@ -171,21 +142,13 @@
                 chatList.innerHTML +=
                 `<li class="chat-right">
                     <div class="chat-hour">08:56 <span class="fa fa-check-circle"></span></div>
-                    <div class="chat-text">${data.message}</div>
-                    <div class="chat-avatar">
-                        <img src="https://www.bootdey.com/img/Content/avatar/avatar3.png" alt="Retail Admin">
-                        <div class="chat-name"><b>${user.name}</b></div>
-                    </div>
+                    <div class="chat-text"><b>Me</b><br>${data.message}</div>
                 </li>`
             }
             else{
                 chatList.innerHTML +=
                 `<li class="chat-left">
-                <div class="chat-avatar">
-                    <img src="https://www.bootdey.com/img/Content/avatar/avatar3.png" alt="Retail Admin">
-                    <div class="chat-name"><b>${user.name}</b></div>
-                </div>
-                <div class="chat-text">${data.message}</div>
+                <div class="chat-text"><b>{{msg.user}}</b><br>${data.message}</div>
                 <div class="chat-hour">08:55 <span class="fa fa-check-circle"></span></div>
             </li>`
             }

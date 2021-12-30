@@ -186,8 +186,13 @@ def chatroom(request):
             room.members.add(request.user)
             room.members.add(user)
             room.save()
+        other_user = None
+        for i in room.members.all():
+            if i!=request.user:
+                other_user = i
+                break
         messages = room.message_room.all()
-        return render(request, "app/chatroom.html", {"messages": messages, "room":room})
+        return render(request, "app/chatroom.html", {"messages": messages, "room":room, "other": other_user})
     except Exception as err:
         print(str(err))
         return HttpResponse("<h4><b>Error occurred</b></h4>")

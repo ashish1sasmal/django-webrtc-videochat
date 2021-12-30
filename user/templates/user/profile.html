@@ -9,13 +9,13 @@
     }
 
     body{
-        background-color: #4d4f4e;
+        background-color: #2e2d2b;
     }
 
     .sub-divs{
         border-radius: 10px;
         box-shadow: 0 8px 25px 0 rgba(74, 174, 217, 0.4), 0 6px 40px 0 rgba(74, 174, 217, 0.19);
-        background-color: #dedede;
+        background-color: white;
     }
 
     .profile-img{
@@ -34,15 +34,21 @@
                 <img src="https://www.bootdey.com/img/Content/avatar/avatar6.png" alt="" class="profile-img">
                 <h5 style="margin-top: 15px;">{{profile.user.first_name}}</h5>
                 <p style="margin-bottom: 0px;color: rgb(95, 92, 92);">{{profile.user.email}}</p>
+                {% if profile.active %}
+                <p style="color: rgb(105, 199, 10);">Online</p>
+                {% else %}
                 <p style="color: rgb(95, 92, 92);">Last Seen : {{profile.last_login}}</p>
-
+                {% endif %}
                 {% if profile.user in user.user_profile.follow.all %}
                 <button class="btn btn-sm btn-warning" id="follow-btn"  onclick="followUser('unfollow');">Unfriend</button>
+                <a type="button" href="{% url 'app:chatroom' %}?user={{profile.unique_id}}" class="btn btn-sm btn-outline-primary">Message</a >
                 {% else %}
                 {% ifnotequal profile.user user %}
                 <button class="btn btn-sm btn-primary" id="follow-btn" onclick="followUser('follow');">Add Friend</button>
-                {% endifnotequal %}{% endif %}
-                <button class="btn btn-sm btn-outline-primary">Message</button>
+                <a type="button" href="{% url 'app:chatroom' %}?user={{profile.unique_id}}" class="btn btn-sm btn-outline-primary">Message</a >
+                {% endifnotequal %}
+                {% endif %}
+               
                 <hr>
             </center>
 
@@ -70,7 +76,7 @@
         <div class="col-md-6 col-sm-12 ms-4 sub-divs p-4">
             <h5>Profile</h5>
             <hr>
-            <form method="post">
+            <form method="post" id="profileform">
                 {% csrf_token %}
                 <div class="row">
                     <div class="col-md-3 col-sm-12 me-2 mb-3"><p>Full Name : </p></div>
@@ -102,8 +108,12 @@
         </div>
     </div>
 </div>
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 <script>
+    {% ifnotequal profile.user user %}
+    $("#profileform :input").prop("disabled", true);
+    document.getElementById("save-btn").style.display = "none";
+    {% endifnotequal %}
     function followUser(action){
         fetch("{% url 'user:followUser' %}?id={{profile.unique_id}}"+"&action="+action).then(res => res.json())
             .then(data => {
