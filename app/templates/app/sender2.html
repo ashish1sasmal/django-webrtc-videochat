@@ -28,8 +28,8 @@
       }
 
       .vid-element video {
-        max-width: 640px;
-        max-height: 460px;
+        max-width: 580px;
+        max-height: 440px;
         width: 100% !important;
         height: 100% !important;
         border-radius: 12px;
@@ -672,9 +672,9 @@ function onVideoAdd(user, stream) {
         document.getElementById(`vid-${user.id}`).srcObject = stream;
     } else {
         var vidDiv = document.createElement('div');
-        vidDiv.setAttribute('class', 'col-5 vid-element')
+        vidDiv.setAttribute('class', 'col-4 vid-element')
         vidElement = document.createElement("VIDEO");
-        vidElement.setAttribute('width', 640);
+        vidElement.setAttribute('width', 500);
         vidElement.setAttribute('height', 460);
         vidElement.setAttribute('autoplay', '');
         vidElement.setAttribute('muted', '');
