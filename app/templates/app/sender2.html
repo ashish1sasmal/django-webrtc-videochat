@@ -259,7 +259,7 @@ setInterval(updateTime, 1000);
 
 let myDetails = {
     "id": '{{request.user.user_profile.unique_id}}',
-    "name": '{{request.user.username}}'
+    "name": '{{request.user.first_name}}'
 };
 let chatSocket;
 let onlineList = document.getElementById("online-list");
