@@ -12,6 +12,7 @@ from django.db.models import Count, Q
 from django.http import JsonResponse
 # Create your views here.
 import uuid
+import json
 
 @login_required
 def user_logout(request):
@@ -64,32 +65,42 @@ def user_login(request):
             return Response("failed", "login failed", status=400)
 
 def profile(request, id):
-    print("id ", id)
-    if request.method == "POST":
-        data = request.POST
-        name = data.get("user_name")
-        email = data.get("email")
-        mobile = data.get("user_mobile")
-        address = data.get("user_address")
-        bio = data.get("user_bio")
-        print(name, email, mobile, address, bio)
-        user = request.user
-        user.first_name = name
-        user.save()
-        profile = Profile.objects.get(user=request.user)
-        profile.mobile = mobile
-        profile.bio = bio
-        profile.address = address
-        profile.save()
-        print(profile.address)
-        print("hello")
-        return redirect("user:profile", id=profile.unique_id)
     try:
         profile = Profile.objects.get(unique_id=id)
     except Exception as err:
         print(str(err))
         return render(request, "app/home.html")
+    print(profile)
     return render(request, "user/profile.html", context={"profile": profile})
+
+
+def profileAPI(request, id):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        name = data.get("user_name")
+        email = data.get("user_email")
+        
+        mobile = data.get("user_mobile")
+        address = data.get("user_address")
+        bio = data.get("user_bio")
+        print(name, email, mobile, address, bio)
+        user = request.user
+        profile = user.user_profile
+        if user.username!=email and User.objects.filter(username=email).count() > 0:
+            return redirect("user:profile", id=profile.unique_id)
+        
+        profile = Profile.objects.get(unique_id=id)
+        profile.mobile = mobile
+        profile.bio = bio
+        profile.address = address
+        profile.save()
+
+        user.first_name = name
+        user.email = email
+        user.username = email
+        user.save()
+
+        return Response("success", "Profile updated", status=200)
 
 
 @login_required

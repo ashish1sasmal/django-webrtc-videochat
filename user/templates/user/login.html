@@ -90,7 +90,12 @@
             fetch("{% url 'user:login' %}", otherPram).then(res=>res.json())
             .then(data=>{
                 console.log(data);
-                window.location = "{% url 'app:home' %}";
+                if (data.status == "success"){
+                  window.location = "{% url 'app:home' %}";
+                }
+                else{
+                  alert(data.message)
+                }
             });
         }
 
