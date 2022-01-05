@@ -222,8 +222,8 @@
             </a>
           </li>
           <li class="chat-icon">
-            <a href="#" class="nav-link px-2 link-dark" id="" onclick="shareScreen();">
-              <i class="fas fa-desktop " style="color: white;"></i>
+            <a href="#" class="nav-link px-2 link-dark"  onclick="shareScreen();">
+              <i class="fas fa-desktop " id="screen-btn" style="color: white;"></i>
             </a>
           </li>
           <li class="chat-icon">
@@ -266,6 +266,7 @@ let onlineList = document.getElementById("online-list");
 let chatList = document.getElementById("chat-box");
 let audioBtn = document.getElementById("audioBtn");
 let videoBtn = document.getElementById("videoBtn");
+let screenBtn = document.getElementById("screen-btn");
 let localVideoStream;
 let localScreenStream;
 let localStream;
@@ -278,6 +279,8 @@ let playAudio = true;
 let videoDialog = document.getElementById("video-div");
 let videoElement;
 let waitList = [];
+let showScreen = false;
+screenBtn.style.color = "red";
 
 function getLocation() {
     if (navigator.geolocation) {
@@ -613,24 +616,26 @@ function muteVideo(screen = false) {
         showVideo = !showVideo;
         console.log(showVideo)
         if (showVideo) {
+            if (showScreen){
+                showScreen = false;
+                localStream = localVideoStream;
+                broadcast(localStream);
+            }
             videoBtn.style.color = "#2870de";
+            onVideoAdd(myDetails, localVideoStream);
         } else {
             videoBtn.style.color = "red";
         }
         localStream.getVideoTracks()[0].enabled = showVideo;
+        
     } else {
         alert("Please allow video permission.");
     }
 }
 
 
-async function shareScreen() {
-    if (!localScreenStream) {
-        localScreenStream = await navigator.mediaDevices.getDisplayMedia();
-        localStream = localScreenStream;
-    }
-    console.log(peerConnection);
-    let track = localStream.getVideoTracks()[0];
+function broadcast(stream){
+  let track = stream.getVideoTracks()[0];
     for (let p in peerConnection) {
         let sender = peerConnection[p].pc.getSenders ? peerConnection[p].pc.getSenders().find(s => s.track && s.track.kind === track.kind) : false;
 
@@ -640,9 +645,28 @@ async function shareScreen() {
         }
 
     }
+}
+
+if (localScreenStream){
+    localScreenStream.getVideoTracks()[0].onended = function () {
+        screenBtn.style.color = "red";
+  };
+}
+
+
+async function shareScreen() {
+    if (!localScreenStream) {
+        localScreenStream = await navigator.mediaDevices.getDisplayMedia();
+        localStream = localScreenStream;
+    }
+    muteVideo();
+    localStream.getVideoTracks()[0].enabled = true;
+    console.log(peerConnection);
+    broadcast(localScreenStream);
     onVideoAdd(myDetails, localScreenStream);
     // senders.find(sender => sender.track.kind === 'video').replaceTrack(localScreenStream.getTracks()[0]);
-
+    showScreen = true;
+    screenBtn.style.color = "#2870de";
 }
 
 
