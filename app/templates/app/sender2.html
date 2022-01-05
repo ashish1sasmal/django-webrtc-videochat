@@ -712,7 +712,7 @@ function onVideoAdd(user, stream) {
         vidDiv.setAttribute('id', `v-${user.id}`);
         vidElement.srcObject = stream;
         vidDiv.appendChild(vidElement);
-        vidDiv.innerHTML += `<p style = "color:white;margin-top:-5px;margin-left:20px;">${user.name}</p>`
+        vidDiv.innerHTML += `<div><p style = "color:white;margin-top:-5px;margin-left:20px;">${user.name}</p></div>`
         videoDialog.appendChild(vidDiv);
         console.log(stream);
     }
