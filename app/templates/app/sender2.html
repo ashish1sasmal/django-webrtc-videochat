@@ -89,6 +89,10 @@
         height: 680px !important;
       }
 
+      .vid-label{
+        color:white;margin-top:-5px;margin-left:20px;
+      }
+
       
     </style>
   </head>
@@ -702,6 +706,7 @@ function onVideoAdd(user, stream) {
     } else {
         var vidDiv = document.createElement('div');
         vidDiv.setAttribute('class', 'col-md-4 col-sm-8 vid-element')
+        vidDiv.setAttribute('id', `id-${user.id}`)
         vidElement = document.createElement("VIDEO");
         vidElement.setAttribute('width', 500);
         vidElement.setAttribute('height', 460);
@@ -712,9 +717,16 @@ function onVideoAdd(user, stream) {
         vidDiv.setAttribute('id', `v-${user.id}`);
         vidElement.srcObject = stream;
         vidDiv.appendChild(vidElement);
-        vidDiv.innerHTML += `<div><p style = "color:white;margin-top:-5px;margin-left:20px;">${user.name}</p></div>`
+        p = document.createElement("p");
+        p.setAttribute("class", "vid-label");
+        p.innerText = user.name;
+        dp = document.createElement("div");
+        dp.appendChild(p);
+        vidDiv.appendChild(dp);
+        // document.getElementById.innerHTML += `<div><p style = "color:white;margin-top:-5px;margin-left:20px;">${user.name}</p></div>`
         videoDialog.appendChild(vidDiv);
         console.log(stream);
+        document.getElementById(``)
     }
     if (user.id == myDetails.id) {
         document.getElementById(`vid-${user.id}`).volume = 0;
