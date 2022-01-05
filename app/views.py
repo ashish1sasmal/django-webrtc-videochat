@@ -52,7 +52,7 @@ def home(request):
 
 @login_required
 def startRoom(request):
-    room_id = str(uuid.uuid4())[:8]
+    room_id = str(uuid.uuid4().hex)[:8]
     room = ChatRoom(admin=request.user, room_id=room_id)
     room.save()
     room.members.add(request.user)
