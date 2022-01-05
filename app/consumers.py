@@ -60,7 +60,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
             self.room = ChatRoom.objects.get(room_id=self.room_group_name)
             user = self.scope["user"]
             profile = user.user_profile
-            self.user = {"id": user.user_profile.unique_id, "name": user.username}
+            self.user = {"id": user.user_profile.unique_id, "name": user.first_name if user.first_name else user.username}
             if add:
                 profile.active = True
                 profile.save()
