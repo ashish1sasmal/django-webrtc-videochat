@@ -89,6 +89,7 @@
         height: 680px !important;
       }
 
+      
     </style>
   </head>
   <body>
@@ -259,7 +260,7 @@ setInterval(updateTime, 1000);
 
 let myDetails = {
     "id": '{{request.user.user_profile.unique_id}}',
-    "name": '{{request.user.first_name}}'
+    "name": '{% if user.first_name %}{{user.first_name}}{% else %}{{user.username}}{% endif %}'
 };
 let chatSocket;
 let onlineList = document.getElementById("online-list");
@@ -655,7 +656,11 @@ if (localScreenStream){
 
 
 async function shareScreen() {
-    if (!localScreenStream) {
+  if (showScreen){
+        localScreenStream = await navigator.mediaDevices.getDisplayMedia();
+        localStream = localScreenStream;
+  }
+    else if (!localScreenStream) {
         localScreenStream = await navigator.mediaDevices.getDisplayMedia();
         localStream = localScreenStream;
     }
@@ -696,7 +701,7 @@ function onVideoAdd(user, stream) {
         document.getElementById(`vid-${user.id}`).srcObject = stream;
     } else {
         var vidDiv = document.createElement('div');
-        vidDiv.setAttribute('class', 'col-4 vid-element')
+        vidDiv.setAttribute('class', 'col-md-4 col-sm-8 vid-element')
         vidElement = document.createElement("VIDEO");
         vidElement.setAttribute('width', 500);
         vidElement.setAttribute('height', 460);
@@ -707,6 +712,7 @@ function onVideoAdd(user, stream) {
         vidDiv.setAttribute('id', `v-${user.id}`);
         vidElement.srcObject = stream;
         vidDiv.appendChild(vidElement);
+        vidDiv.innerHTML += `<p style = "color:white;margin-top:-5px;margin-left:20px;">${user.name}</p>`
         videoDialog.appendChild(vidDiv);
         console.log(stream);
     }
@@ -772,6 +778,15 @@ function sendInvite() {
     }
     document.getElementById("inviteEmail").value = "";
 }
+
+
+var input = document.getElementById("inputMsg");
+input.addEventListener("keyup", function(event) {
+    if (event.keyCode === 13) {
+        event.preventDefault();
+        sendMessage();
+    }
+});
 
     </script>
   </body>
